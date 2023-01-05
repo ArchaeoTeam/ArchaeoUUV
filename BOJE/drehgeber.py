@@ -44,8 +44,8 @@ def update_encoder_values():
       global result
 
       result=spi.xfer2([AMT22_NOP, AMT22_READ_TURNS, AMT22_NOP, AMT22_NOP],speed_hz,delay_us)
-      rotation=((result[0] & 0b111111) << 8) + result[1] # 0 - 16383 Pro umdrehung
-      turns=result[3]
+      rotation=16383-((result[0] & 0b111111) << 8) + result[1] # 0 - 16383 Pro umdrehung
+      turns=255-result[3]
 
       #lenght=(((calibturns-turns)*16383)-rotation+calibtotat)/370
       #print(lenght)
