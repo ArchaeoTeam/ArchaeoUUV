@@ -1,0 +1,9 @@
+{
+    "name":"Sensor2Mavlink,
+    "description":"Sensor2Mavlink",
+    "icon":"mdi:video-input-antenna",
+    "company":"Archaeocopter",
+    "version":"1.0.0",
+    "webpage":"http://www.archaeocopter.de/",
+    "api":""
+ }
