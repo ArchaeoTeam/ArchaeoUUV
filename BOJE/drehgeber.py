@@ -99,10 +99,11 @@ while True:
    print("Kompass")
    print(compass)
 
-   #Print Drehgeber stuff
-   print("Turns: " + str(turns+(16383/(16383-rotation))))
+   #Print Turns
+   print("Turns: " + str(turns+(rotation/16383)))
+
    #Convert Turns to meters
-   lenght=(((turns+(16383/(16383-rotation)))*16383)-rotation)/370
-   print("Länge: " + str(lenght) + "m")
+   print("Meters: " + str(((turns+(rotation/16383))*1.2)))
+   
    time.sleep(0.1)
 
