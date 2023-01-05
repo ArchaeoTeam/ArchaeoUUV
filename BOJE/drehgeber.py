@@ -102,7 +102,7 @@ while True:
    print(compass)
 
    #Print Turns
-   fturn=turns+(rotation/16383)-initialrotation
+   fturn=turns+(rotation-initialrotation/16383)
    print("Turns: " + str())
 
    #Convert Turns to meters
