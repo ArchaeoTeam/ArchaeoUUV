@@ -108,7 +108,7 @@ while True:
    print("Turns: " + str(fturn))
 
    #Convert Turns to meters
-   print("Meters: " + str(2.3806*fturn))
+   print("Meters: " + str(fturn/2.3806))
    
    time.sleep(0.1)
 
