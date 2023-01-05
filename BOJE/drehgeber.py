@@ -103,7 +103,7 @@ while True:
 
    #Print Turns
    fturn=turns+(rotation-initialrotation/16383)
-   print("Turns: " + str())
+   print("Turns: " + str(fturn))
 
    #Convert Turns to meters
    print("Meters: " + str(2.3806*fturn))
