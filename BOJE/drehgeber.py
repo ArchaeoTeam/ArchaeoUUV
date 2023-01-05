@@ -79,19 +79,17 @@ def rec_RTK():
 
 
 #start depth & compass thread
-#thread_boot = threading.Thread(target=update_boot_values, args=(), daemon=True)
-#thread_boot.start()
+thread_boot = threading.Thread(target=update_boot_values, args=(), daemon=True)
+thread_boot.start()
 
 #start encoder thread
-#thread_encoder = threading.Thread(target=update_encoder_values, args=(), daemon=True)
-#thread_encoder.start()
-thread_send_RTK = threading.Thread(target=send_RTK, args=(), daemon=True)
-thread_send_RTK.start()
+thread_encoder = threading.Thread(target=update_encoder_values, args=(), daemon=True)
+thread_encoder.start()
 
-
-
-thread_rec_RTK = threading.Thread(target=rec_RTK, args=(), daemon=True)
-thread_rec_RTK.start()
+#thread_send_RTK = threading.Thread(target=send_RTK, args=(), daemon=True)
+#thread_send_RTK.start()
+#thread_rec_RTK = threading.Thread(target=rec_RTK, args=(), daemon=True)
+#thread_rec_RTK.start()
 
 while True:
    os.system("clear")
@@ -102,7 +100,8 @@ while True:
    print(compass)
 
    #Print Drehgeber stuff
-   print("\n\nRotation: " + str(rotation))
-   print("Turns: " + str(turns))
+   print("Turns: " + str(turns+(16383/(16383-rotation))))
+   #Convert that to meters
+   print("Länge: " + str(((turns+(16383/(16383-rotation)))*16383)-rotation+16383)/370)
    time.sleep(0.1)
 
