@@ -23,6 +23,7 @@ delay_us=3 #setting the delay in microseconds
 
 turns = 0
 rotation = 0
+initialrotation = 0
 result = []
 
 alt_url="http://192.168.2.2:6040/mavlink/vehicles/1/components/1/messages/AHRS2/message/altitude"
@@ -44,7 +45,9 @@ def update_encoder_values():
       global result
 
       result=spi.xfer2([AMT22_NOP, AMT22_READ_TURNS, AMT22_NOP, AMT22_NOP],speed_hz,delay_us)
+
       rotation=16383-((result[0] & 0b111111) << 8) + result[1] # 0 - 16383 Pro umdrehung
+      
       turns=255-result[3]
 
       #lenght=(((calibturns-turns)*16383)-rotation+calibtotat)/370
@@ -75,9 +78,6 @@ def rec_RTK():
         print("received message: %s" % data)
     
         
-
-
-
 #start depth & compass thread
 thread_boot = threading.Thread(target=update_boot_values, args=(), daemon=True)
 thread_boot.start()
@@ -100,10 +100,11 @@ while True:
    print(compass)
 
    #Print Turns
-   print("Turns: " + str(turns+(rotation/16383)))
+   fturn=turns+(rotation/16383)
+   print("Turns: " + str())
 
    #Convert Turns to meters
-   print("Meters: " + str(((turns+(rotation/16383))*1.2)))
+   print("Meters: " + str(2.3806*fturn))
    
    time.sleep(0.1)
 
