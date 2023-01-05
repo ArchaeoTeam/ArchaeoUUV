@@ -101,7 +101,8 @@ while True:
 
    #Print Drehgeber stuff
    print("Turns: " + str(turns+(16383/(16383-rotation))))
-   #Convert that to meters
-   print("Länge: " + str(((turns+(16383/(16383-rotation)))*16383)-rotation+16383)/370)
+   #Convert Turns to meters
+   lenght=(((turns+(16383/(16383-rotation)))*16383)-rotation)/370
+   print("Länge: " + str(lenght) + "m")
    time.sleep(0.1)
 
