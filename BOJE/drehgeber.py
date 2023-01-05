@@ -104,7 +104,7 @@ while True:
    print("RAWTurns: " + str(turns))
 
    #Print Turns
-   fturn=turns+( (rotation)/16383 )
+   fturn=turns+( (rotation-4500)/16383 )
    print("Turns: " + str(fturn))
 
    #Convert Turns to meters
