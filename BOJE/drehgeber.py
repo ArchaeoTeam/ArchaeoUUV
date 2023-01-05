@@ -120,8 +120,10 @@ while True:
    print("Correction:" + str(correction))
    
    #Calc with compas in UTM
-   UTMX=math.sin(compass)*correction
-   UTMY=math.cos(compass)*correction
+   UTMY=math.sin(compass)*correction
+   UTMX=math.cos(compass)*correction
+   #winkel 0 = cosinus 1 -- x
+   #winkel 90 = sinus 1 --> y
    print("UTMX:" + str(UTMX))
    print("UTMY:" + str(UTMY))
    time.sleep(0.5)
