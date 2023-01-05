@@ -19,10 +19,12 @@ spi.open(0, 0) #SPI port 0, CS 0
 speed_hz=500000 #setting the speed in hz
 delay_us=3 #setting the delay in microseconds
 
+#BOJE DATA
 turns = 0
 rotation = 0
 result = []
 
+#BOOT DATA
 alt_url="http://192.168.2.2:6040/mavlink/vehicles/1/components/1/messages/AHRS2/message/altitude"
 compass_url="http://192.168.2.2:6040/mavlink/vehicles/1/components/1/messages/VFR_HUD/message/heading"
 depth = 0
