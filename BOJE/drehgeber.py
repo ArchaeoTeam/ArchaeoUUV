@@ -101,6 +101,10 @@ while True:
    print("Kompass")
    print(compass)
 
+   #Print encoder data
+   print("RAWRotation: " + str(rotation))
+   print("RAWTurns: " + str(turns))
+
    #Print Turns
    fturn=turns+( (rotation-initialrotation)/16383 )
    print("Turns: " + str(fturn))
