@@ -35,12 +35,8 @@ def update_boot_values():
    while True:
       global depth
       global compass
-      depth2 = float(requests.get(alt_url).text)
-      compass = float(requests.get(compass_url).text)
-      if depth2 < 0.0:
-         depth=0.0
-      else:
-         depth=depth2
+      depth = requests.get(alt_url).text
+      compass = requests.get(compass_url).text
 
 def update_encoder_values():
    while True:
@@ -115,14 +111,12 @@ while True:
    #Convert Turns to meters
    print("Meters: " + str(fturn/2.3806))
    #Abstand=sqrt(Länge Kabel^2-tiefe^2)
-   #calc Correctionlenght
-   correction=math.sqrt(math.pow(fturn/2.3806,2) - math.pow(depth,2))
-   print("Correction:" + str(correction))
    
-   #Calc with compas in UTM
+   correction=math.sqrt((fturn/2.3806)**2 - (depth)**2)
+   print("Correction:" + str(correction))
    UTMX=math.sin(compass)*correction
    UTMY=math.cos(compass)*correction
    print("UTMX:" + str(UTMX))
    print("UTMY:" + str(UTMY))
-   time.sleep(0.5)
+   time.sleep(5.1)
 
