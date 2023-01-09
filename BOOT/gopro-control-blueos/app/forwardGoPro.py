@@ -53,8 +53,18 @@ async def send_video_data(websocket):
 
 # Function to set up a WebRTC connection and start sending video data
 async def start_webrtc(uri):
-    async with websockets.connect(uri) as websocket:
-        await send_video_data(websocket)
+    while True:
+        try:
+            async with websockets.connect(uri) as websocket:
+                print("WebRTC connection established!")
+                # Forward UDP stream over WebRTC
+                while True:
+                    data, addr = sock.recvfrom(2048)
+                    await websocket.send(data)
+        except Exception as e:
+            print(f"Error establishing WebRTC connection: {e}")
+            print("Retrying in 5 seconds...")
+            await asyncio.sleep(5)
 
 # Set up the WebRTC URI based on the IP address and port number specified as command-line arguments
 try:
