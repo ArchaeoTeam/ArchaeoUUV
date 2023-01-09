@@ -3,7 +3,7 @@ from pathlib import Path
 import sys
 import uvicorn
 import websockets
-from websockets import WebSocket
+from websockets.legacy.server import WebSocket
 from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI, HTTPException, status
 from fastapi.responses import HTMLResponse, FileResponse
