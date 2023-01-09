@@ -60,7 +60,7 @@ async def start_webrtc(uri):
 try:
     #args = sys.argv[1].split(':')
 
-    WEBRTC_IP = "127.0.0.1" #args[0]
+    WEBRTC_IP = "0.0.0.0" #args[0]
     WEBRTC_PORT = 6788 #int(args[1])
     WEBRTC_URI = f"ws://{WEBRTC_IP}:{WEBRTC_PORT}"
 except:
