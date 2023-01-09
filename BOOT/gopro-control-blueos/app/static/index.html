@@ -35,7 +35,11 @@
                         @change="setServo"
                       ></v-slider>
                     </v-card>
-
+                    <v-card class="mx-auto" width="700" outlined>
+                        <div>
+                            <video ref="video" autoplay></video>
+                        </div>
+                    </v-card>
                 </v-row>
             </v-container>
         </v-main>
@@ -53,7 +57,36 @@
         vuetify: new Vuetify(),
         data() {
             return {
+                videoData: null,
             }
+        },
+        mounted() {
+            // Set up the WebRTC connection
+            const pc = new RTCPeerConnection();
+
+            // Set up a handler to receive video data
+            pc.onaddstream = (event) => {
+                this.videoData = event.stream;
+            };
+
+            // Set up a handler to be called when the WebRTC connection is established
+            pc.onconnectionstatechange = () => {
+                if (pc.connectionState === "connected") {
+                    console.log("WebRTC connection established!");
+                }
+            };
+
+            // Connect to the WebRTC server
+            pc.createOffer()
+                .then((offer) => pc.setLocalDescription(offer))
+                .then(() => fetch("/offer", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        sdp: pc.localDescription
+                    })
+                }))
+                .then((response) => response.json())
+                .then((answer) => pc.setRemoteDescription(answer));
         },
         methods: {
             async setServo(value) {
@@ -64,6 +97,12 @@
                     }
                 })
             }
+        },
+        watch: {
+            videoData(newData) {
+            // Bind the video data to the <video> element when it is received
+            this.$refs.video.srcObject = newData;
+            },
         },
         mounted() {
             this.loadTextFromBackend()

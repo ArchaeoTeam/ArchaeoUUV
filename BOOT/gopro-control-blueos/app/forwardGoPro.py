@@ -5,78 +5,69 @@ import json
 import atexit
 import sys
 import psutil
+import asyncio
+import websockets
 
-usb_interface=psutil.net_if_addrs()["usb0"][0]
+# Find the IP address of the GoPro's USB interface
+usb_interface = psutil.net_if_addrs()["usb0"][0]
 if usb_interface == None:
     print("GoPro not connected properly! No usb0 interface")
     sys.exit()
 
-GOPRO_IP = usb_interface.address [:-1] + "1"
-print("GoPro connected on "+GOPRO_IP)
+# Set the GoPro's IP address based on the USB interface's address
+GOPRO_IP = usb_interface.address[:-1] + "1"
+print("GoPro connected on " + GOPRO_IP)
 
-START_URL = "http://"+GOPRO_IP+"/gp/gpWebcam/START?res=1080"
-STOP_URL = "http://"+GOPRO_IP+"/gp/gpWebcam/STOP"
+# URL for starting the GoPro's webcam feature
+START_URL = "http://" + GOPRO_IP + "/gp/gpWebcam/START?res=1080"
 
-try:
-    args = sys.argv[1].split(':')
+# URL for stopping the GoPro's webcam feature
+STOP_URL = "http://" + GOPRO_IP + "/gp/gpWebcam/STOP"
 
-    UDP_IP = args[0]
-    UDP_PORT = int(args[1])
-except:
-    print("Parameter needed in form of <IP:PORT>")
-    sys.exit()
-
+# Register an exit handler to stop the GoPro's webcam feature when the script is interrupted or terminated
 def exit_handler():
     print('\nStopping Webcam...\n')
     requests.get(STOP_URL)
 
 atexit.register(exit_handler)
 
-sock = socket.socket(socket.AF_INET, # Internet
-                     socket.SOCK_DGRAM) # UDP
-sock.bind(("", 8554))
-
-
-
+# Start the GoPro's webcam feature
 r = requests.get(START_URL)
 r_json = json.loads(r.text)
 
-if(r_json['error'] == 0 and r_json['status'] == 2):
-    print("\nGoPro Webcam mode startet\n")
-    print("Forward UDP stream to " + UDP_IP + ":" + str(UDP_PORT) + "\n")
+if r_json['error'] == 0 and r_json['status'] == 2:
+    print("\nGoPro Webcam mode started\n")
+else:
+    print("Error starting GoPro webcam mode:", r_json)
+    sys.exit()
+
+# Set up a UDP server to receive video data from the GoPro
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.bind(("", 8554))
+
+# Function to send video data over WebRTC
+async def send_video_data(websocket):
     while True:
         data, addr = sock.recvfrom(2048)
-        #print("received message:", data)
-        sock.sendto(data, (UDP_IP, UDP_PORT))
+        await websocket.send(data)
 
+# Function to set up a WebRTC connection and start sending video data
+async def start_webrtc(uri):
+    async with websockets.connect(uri) as websocket:
+        await send_video_data(websocket)
 
-    x = input()
-    print ('Try using KeyboardInterrupt')
+# Set up the WebRTC URI based on the IP address and port number specified as command-line arguments
+try:
+    #args = sys.argv[1].split(':')
 
-#vlc -vvv --network-caching=300 --sout-x264-preset=ultrafast --sout-x264-tune=zerolatency --sout-x264-vbv-bufsize 0 --sout-transcode-threads 4 --no-audio udp://@:8554
-#import socket
-#import struct
-#import time
-#import sys
-#
-## create socket
-#sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-#
-## bind socket to port 5887
-#server_address = ('', 8554)
-#print('starting up on {} port {}'.format(*server_address))
-#sock.bind(server_address)
-#
-## connect to 192.168.178.20:5888
-#destination = ('192.168.178.65', 8554)
-#print('connecting to {} port {}'.format(*destination))
-#sock.connect(destination)
-#
-## send RTP header
-#sock.send(struct.pack('!BBHII', 0x80, 0x60, 0x00, 0x00, 0x00))
-#
-## send data
-#while True:
-#    data, address = sock.recvfrom(4096)
-#    print('received {} bytes from {}'.format(len(data), address))
-#    sock.send(data)
+    WEBRTC_IP = "127.0.0.1" #args[0]
+    WEBRTC_PORT = 6788 #int(args[1])
+    WEBRTC_URI = f"ws://{WEBRTC_IP}:{WEBRTC_PORT}"
+except:
+    print("Parameter needed in form of <IP:PORT>")
+    sys.exit()
+
+print("Forwarding UDP stream to " + WEBRTC_IP + ":" + str(WEBRTC_PORT) + " over WebRTC\n")
+
+# Start the WebRTC connection
+asyncio.get_event_loop().run_until_complete(start_webrtc(WEBRTC_URI))
