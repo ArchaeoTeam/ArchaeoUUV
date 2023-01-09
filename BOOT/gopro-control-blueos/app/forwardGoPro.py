@@ -71,7 +71,7 @@ try:
     #args = sys.argv[1].split(':')
 
     WEBRTC_IP = "127.0.0.1" #args[0]
-    WEBRTC_PORT = 6787 #int(args[1])
+    WEBRTC_PORT = 8004 #int(args[1])
     WEBRTC_URI = f"ws://{WEBRTC_IP}:{WEBRTC_PORT}"
 except:
     print("Parameter needed in form of <IP:PORT>")
