@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 from pathlib import Path
 
-import appdirs
 import uvicorn
 from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI, HTTPException, status
