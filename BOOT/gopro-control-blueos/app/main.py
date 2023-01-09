@@ -2,16 +2,8 @@
 from pathlib import Path
 
 import uvicorn
-from fastapi.staticfiles import StaticFiles
-from fastapi import FastAPI, HTTPException, status
-from fastapi.responses import HTMLResponse, FileResponse
-from fastapi_versioning import VersionedFastAPI, version
 from loguru import logger
 from typing import Any
-from gpiozero import Servo
-
-from pydantic import BaseModel
-
 
 class TextData(BaseModel):
     data: str
