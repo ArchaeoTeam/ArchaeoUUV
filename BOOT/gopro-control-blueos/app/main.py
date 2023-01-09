@@ -10,11 +10,11 @@ from loguru import logger
 from typing import Any
 
 
-SERVICE_NAME = "ExampleExtension5"
+SERVICE_NAME = "GoProControl"
 
 app = FastAPI(
-    title="Example Extension r API",
-    description="API for an example extension that saves/loads data as files.",
+    title="Go Pro Preview and Control",
+    description="This is a simple web app to preview and control a GoPro camera",
 )
 
 logger.info(f"Starting {SERVICE_NAME}!")
