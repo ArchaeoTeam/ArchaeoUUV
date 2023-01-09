@@ -3,13 +3,14 @@ from pathlib import Path
 import sys
 import uvicorn
 import websockets
-from websockets.legacy.server import WebSocket
+from websockets import WebSocketServerProtocol
 from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI, HTTPException, status
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi_versioning import VersionedFastAPI, version
 from loguru import logger
 from typing import Any
+from pydantic import BaseModel, Field
 
 
 try:
@@ -25,6 +26,15 @@ app = FastAPI(
     description="This is a simple web app to preview and control a GoPro camera",
 )
 
+class WebSocketServerProtocolField(Field):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.type_ = "websocket"
+        self.model_field_type = WebSocketServerProtocol
+
+class WebsocketModel(BaseModel):
+    websocket: WebSocketServerProtocolField
+
 logger.info(f"Starting {SERVICE_NAME}!")
 
 app = VersionedFastAPI(app, version="1.0.0", prefix_format="/v{major}.{minor}", enable_latest=True)
@@ -32,7 +42,7 @@ app = VersionedFastAPI(app, version="1.0.0", prefix_format="/v{major}.{minor}", 
 app.mount("/", StaticFiles(directory="static",html = True), name="static")
 
 @app.websocket("/stream")
-async def websocket_endpoint(websocket: WebSocket):
+async def websocket_endpoint(websocket: WebsocketModel):
     logger.info(f"Connect to ws://127.0.0.1: {str(PORT-1)}!")
     # Connect to the WebRTC server and receive the stream
     async with websockets.connect("ws://127.0.0.1:"+str(PORT-1)) as websocket_in:
