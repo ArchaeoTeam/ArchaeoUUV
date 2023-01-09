@@ -3,6 +3,7 @@ from pathlib import Path
 import sys
 import uvicorn
 import websockets
+from websockets import WebSocket
 from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI, HTTPException, status
 from fastapi.responses import HTMLResponse, FileResponse
@@ -31,8 +32,8 @@ app = VersionedFastAPI(app, version="1.0.0", prefix_format="/v{major}.{minor}", 
 app.mount("/", StaticFiles(directory="static",html = True), name="static")
 
 @app.websocket("/stream")
-async def websocket_endpoint(websocket: websockets.WebSocketServerProtocol):
-    print("Connect to "+"ws://127.0.0.1:"+str(PORT-1))
+async def websocket_endpoint(websocket: WebSocket):
+    logger.info(f"Connect to ws://127.0.0.1: {str(PORT-1)}!")
     # Connect to the WebRTC server and receive the stream
     async with websockets.connect("ws://127.0.0.1:"+str(PORT-1)) as websocket_in:
         # Forward the stream to the client over the FastAPI websocket
