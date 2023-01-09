@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 from pathlib import Path
-
+import sys
 import uvicorn
 from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI, HTTPException, status
@@ -9,6 +9,12 @@ from fastapi_versioning import VersionedFastAPI, version
 from loguru import logger
 from typing import Any
 
+
+try:
+    PORT = sys.argv[1]
+except:
+    print("Please provide a port number as parameter!")
+    sys.exit()
 
 SERVICE_NAME = "GoProControl"
 
@@ -29,4 +35,4 @@ async def root() -> Any:
 
 if __name__ == "__main__":
     # Running uvicorn with log disabled so loguru can handle it
-    uvicorn.run(app, host="0.0.0.0", port=6789, log_config=None)
+    uvicorn.run(app, host="0.0.0.0", port=PORT, log_config=None)
