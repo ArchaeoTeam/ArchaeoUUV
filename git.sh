@@ -8,4 +8,4 @@ expect "*?@github.com':*"
 send -- "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"
 send -- "\r"
 send -- "\r"
-expect eof
+expect eof 
