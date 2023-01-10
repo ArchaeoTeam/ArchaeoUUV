@@ -2,7 +2,7 @@
 spawn git add *
 spawn git commit -m "commit"
 spawn git push
-expect "*?Username:*"
+expect "*?github.com':*"
 send -- "bommix\r"
 expect "*?Password:*"
 send -- "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"
