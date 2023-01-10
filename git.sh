@@ -4,7 +4,7 @@ spawn git commit -m "commit"
 spawn git push
 expect "*?//github.com':*"
 send -- "bommix\r"
-expect "*?@github.com':*"
+expect "*?bommix@github.com':*"
 send -- "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"
 send -- "\r"
 send -- "\r"
