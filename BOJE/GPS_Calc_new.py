@@ -83,7 +83,6 @@ def readSerialNMEA():
    except Exception as e:
       print(e)
       
-        
 def send_RTK():
     while True:
         time.sleep(5)
