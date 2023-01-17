@@ -95,8 +95,8 @@ def rec_RTK():
         print("received message: %s" % data)
         RTKLAT=1
         RTKLON=2
-        FIXLAT=51,07205984
-        FIXLON=13,59835664
+        FIXLAT=51.07205984
+        FIXLON=13.59835664
         #Prüfen ob die Eingestellte RTK Koordinate richtig sein kann
         if abs(RTKLAT-FIXLAT) < 100:
             if abs(RTKLON-FIXLON) < 100:
@@ -116,9 +116,9 @@ def rec_RTK():
 def getAccuracy(distance, depth):
    #--> Bestimme Genauigkeit im schnitt 2cm pro meter 2cm bis 10m danach 2m --> TODO: Why these values?
    if depth < 20:
-      return math.sqrt((str(distance) * 0,02)*(str(distance) * 0,02) + 0,15 * 0,15)
+      return math.sqrt((distance * 0.02)*(distance * 0.02) + 0,15 * 0,15)
    else:
-      return math.sqrt((str(distance) * 0,02)*(str(distance) * 0,02) + 2 * 2)
+      return math.sqrt((distance * 0.02)*(distance * 0.02) + 2 * 2)
 
 
 #def test():
@@ -195,4 +195,4 @@ def getAccuracy(distance, depth):
 #   
 #      time.sleep(0.5)
 
-readSerialNMEA();
+readSerialNMEA()
