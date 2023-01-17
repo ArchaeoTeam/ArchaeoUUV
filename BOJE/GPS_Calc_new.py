@@ -74,12 +74,14 @@ def update_encoder_values():
       #print(lenght)
 
 def readSerialNMEA():
-   ser = serial.Serial('/dev/serial0', baudrate=115200)
-   
-   while True:
-      line = ser.readline().decode('ascii', errors='replace')
-      print(line.strip())
-   
+   try:
+      ser = serial.Serial('/dev/serial0', baudrate=115200)
+      while True:
+         line = ser.readline().decode('ascii', errors='replace')
+         print(line.strip())
+   except Exception as e:
+      print(e)
+      
         
 def send_RTK():
     while True:
