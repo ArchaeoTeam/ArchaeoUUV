@@ -121,78 +121,78 @@ def getAccuracy(distance, depth):
       return math.sqrt((str(distance) * 0,02)*(str(distance) * 0,02) + 2 * 2)
 
 
-def test():
-   #___________________________MAIN_______________________________        
-
-   #start depth & compass thread
-   thread_boot = threading.Thread(target=update_boot_values, args=(), daemon=True)
-   thread_boot.start()
-
-   #start encoder thread
-   thread_encoder = threading.Thread(target=update_encoder_values, args=(), daemon=True)
-   thread_encoder.start()
-
-   while True:
-      os.system("clear")
-      #Print boot data
-      print("Tiefe")
-      print(depth)
-      print("Kompass")
-      print(compass)
-
-      #Print RAW encoder data
-      print("Result: " + str(result))
-      print("RAWRotation: " + str(rotation))
-      print("RAWTurns: " + str(turns))
-
-      #Convert RAW encoder data to Wheel-Turns float
-      fturn = turns+( (rotation-4500)/16383 )
-      print("Turns: " + str(fturn))
-
-      #Convert Turns to Distance(Buoy, UUV)
-      distance = fturn/2.3806
-      print("Meters: " + str(distance))
-
-      #Calculate Offset with Pythagoras | distance² = depth² + offset²
-      correction = math.sqrt(math.pow(distance,2) - math.pow(depth,2))
-      print("Correction-offset:" + str(correction))
-      
-      #Calc with compas in UTM
-      UTMY=math.sin(compass)*correction
-      UTMX=math.cos(compass)*correction
-      
-      #Angle 0 = cosinus 1 -- x
-      #Angle 90 = sinus 1 --> y
-      print("UTMX:" + str(UTMX))
-      print("UTMY:" + str(UTMY))
-      
-      # 
-      Lat="51.035540"
-      Lon="13.735870"
-      
-      # --> Bringe die Koordinaten in gdal
-      point.AddPoint(Lat, Lon)
-      #--> Transformiere in UTM
-      point.Transform(transform)
-
-      Accuracy = getAccuracy(distance, depth)
-
-      if RTK:
-         point.AddPoint(point.GetX()+RTKX, point.GetY()+RTKY)
-         Accuracy = Accuracy + 0,35
-      else:
-         Accuracy = Accuracy + 3
-         
-      point.AddPoint(point.GetX()+UTMX, point.GetY()+UTMY)
-      point.Transform(transformback)
-      
-      
-      Lat=point.GetX()
-      Lon=point.GetY()
-      Accuracy=Accuracy
-      #Hier umwandeln in NMEA und ans Boot senden bitte David
-      #Bitte im Paket angeben statt fix DGPS
-   
-      time.sleep(0.5)
+#def test():
+#   #___________________________MAIN_______________________________        
+#
+#   #start depth & compass thread
+#   thread_boot = threading.Thread(target=update_boot_values, args=(), daemon=True)
+#   thread_boot.start()
+#
+#   #start encoder thread
+#   thread_encoder = threading.Thread(target=update_encoder_values, args=(), daemon=True)
+#   thread_encoder.start()
+#
+#   while True:
+#      os.system("clear")
+#      #Print boot data
+#      print("Tiefe")
+#      print(depth)
+#      print("Kompass")
+#      print(compass)
+#
+#      #Print RAW encoder data
+#      print("Result: " + str(result))
+#      print("RAWRotation: " + str(rotation))
+#      print("RAWTurns: " + str(turns))
+#
+#      #Convert RAW encoder data to Wheel-Turns float
+#      fturn = turns+( (rotation-4500)/16383 )
+#      print("Turns: " + str(fturn))
+#
+#      #Convert Turns to Distance(Buoy, UUV)
+#      distance = fturn/2.3806
+#      print("Meters: " + str(distance))
+#
+#      #Calculate Offset with Pythagoras | distance² = depth² + offset²
+#      correction = math.sqrt(math.pow(distance,2) - math.pow(depth,2))
+#      print("Correction-offset:" + str(correction))
+#      
+#      #Calc with compas in UTM
+#      UTMY=math.sin(compass)*correction
+#      UTMX=math.cos(compass)*correction
+#      
+#      #Angle 0 = cosinus 1 -- x
+#      #Angle 90 = sinus 1 --> y
+#      print("UTMX:" + str(UTMX))
+#      print("UTMY:" + str(UTMY))
+#      
+#      # 
+#      Lat="51.035540"
+#      Lon="13.735870"
+#      
+#      # --> Bringe die Koordinaten in gdal
+#      point.AddPoint(Lat, Lon)
+#      #--> Transformiere in UTM
+#      point.Transform(transform)
+#
+#      Accuracy = getAccuracy(distance, depth)
+#
+#      if RTK:
+#         point.AddPoint(point.GetX()+RTKX, point.GetY()+RTKY)
+#         Accuracy = Accuracy + 0,35
+#      else:
+#         Accuracy = Accuracy + 3
+#         
+#      point.AddPoint(point.GetX()+UTMX, point.GetY()+UTMY)
+#      point.Transform(transformback)
+#      
+#      
+#      Lat=point.GetX()
+#      Lon=point.GetY()
+#      Accuracy=Accuracy
+#      #Hier umwandeln in NMEA und ans Boot senden bitte David
+#      #Bitte im Paket angeben statt fix DGPS
+#   
+#      time.sleep(0.5)
 
 readSerialNMEA();
