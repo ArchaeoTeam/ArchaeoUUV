@@ -80,8 +80,8 @@ def readSerialNMEA():
          line = ser.readline().decode('ascii', errors='replace')
          if line[0:6] == '$GNGGA' or line[0:6] == '$GNRMC':
             print(line.strip())
-   except Exception as e:
-      print(e)
+   except:
+      print("Error reading serial port")
       
 def send_RTK():
     while True:
