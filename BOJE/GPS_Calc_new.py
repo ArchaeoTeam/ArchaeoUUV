@@ -75,8 +75,9 @@ def update_encoder_values():
 
 def readSerialNMEA():
    with serial.Serial('/dev/serial0', baudrate=115200) as ser:
-      line = ser.readline().decode('ascii', errors='replace')
-      print(line.strip())
+      while True:
+         line = ser.readline().decode('ascii', errors='replace')
+         print(line.strip())
    
         
 def send_RTK():
