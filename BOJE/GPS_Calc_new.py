@@ -82,7 +82,7 @@ def readSerialNMEA():
             print(line.strip())
    except:
       print("Error reading serial port")
-      readSerialNMEA()
+      readSerialNMEA();
       
 def send_RTK():
     while True:
