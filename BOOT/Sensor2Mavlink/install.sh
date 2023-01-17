@@ -9,14 +9,20 @@ set -e
 
 BUILD_TOOLS=(
     binutils
+	gcc
     g++
     wget
     unzip
     make
 	build-essential
 	python-dev
-	python-smbus
-	python-pip
+	python3-dev
+	python3-smbus
+	python3-pip	
+	python3-gpg
+	libc-dev
+	libevent-dev
+	gpg
 )
 
 BUILD_LIBS=(
@@ -34,7 +40,19 @@ cd pigpio-master
 make -j$(nproc)
 make install
 
-apt -y remove ${BUILD_TOOLS[*]}
-apt -y autoremove
-apt -y clean
-sudo raspi-config nonint do_i2c 0
+
+cd ..
+rm master.zip
+
+wget https://github.com/sarnold/RPi.GPIO/archive/refs/heads/master.zip
+unzip master.zip
+cd RPi.GPIO-master
+python3 setup.py install
+
+
+#apt-get -y remove ${BUILD_TOOLS[*]}
+#apt-get -y autoremove
+#apt-get -y clean
+pip3 install appdirs
+pip3 install aiohttp
+#raspi-config nonint do_i2c 0
