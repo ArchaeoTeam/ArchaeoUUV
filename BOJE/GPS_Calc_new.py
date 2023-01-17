@@ -74,7 +74,7 @@ def update_encoder_values():
       #print(lenght)
 
 def readSerialNMEA():
-   with serial.Serial('/dev/ttyAMA0', baudrate=115200) as ser:
+   with serial.Serial('/dev/serial0', baudrate=115200) as ser:
       line = ser.readline().decode('ascii', errors='replace')
       print(line.strip())
    
