@@ -78,7 +78,8 @@ def readSerialNMEA():
       ser = serial.Serial('/dev/serial0', baudrate=115200)
       while True:
          line = ser.readline().decode('ascii', errors='replace')
-         print(line.strip())
+         if line[0:6] == '$GPGGA' or line[0:6] == '$GNRMC':
+            print(line.strip())
    except Exception as e:
       print(e)
       
