@@ -7,6 +7,8 @@ import os, sys
 import socket, serial
 import math
 import pynmea2
+from csv_logger import CsvLogger
+import logging
 
 from osgeo.ogr import Geometry, wkbPoint
 from osgeo.osr import SpatialReference, SpatialReference, CoordinateTransformation
@@ -40,8 +42,9 @@ speed_hz=500000 #setting the speed in hz
 #ENCODER VALUES
 delay_us=3 #setting the delay in microseconds
 Accuracy = 0
-turns = 0
-rotation = 0
+turns = 0   #number of turns of the wheel
+rotation = 0 #position of wheel
+distance = 0 #in meters between buoy and ROV
 result = []
 
 alt_url="http://192.168.2.2:6040/mavlink/vehicles/1/components/1/messages/AHRS2/message/altitude"
@@ -49,7 +52,24 @@ compass_url="http://192.168.2.2:6040/mavlink/vehicles/1/components/1/messages/VF
 depth = 0
 compass = 0
 
+#SERIAL GPS
 ser = serial.Serial('/dev/serial0', baudrate=115200)
+
+#ROV SOCKET
+BOOT_IP = "192.168.2.2"
+BOOT_PORT = 27000
+sock_boot = socket.socket(socket.AF_INET, # Internet
+                  socket.SOCK_DGRAM) # UDP
+
+#LOGGING
+log_filepath = "logs/GNSS_"+time.strftime("%Y%m%d-%H%M%S")+ ".csv"
+delimiter = ';'
+header = ['date', 'NMEA_rover', 'NMEA_corrected', 'NMEA_base', 'tether_length', 'compass', 'depth', 'accuracy']
+csvlogger = CsvLogger(filename=log_filepath,
+                      delimiter=delimiter,
+                      max_files=50,
+                      header=header)
+
 
 def update_boot_values():
    while True:
@@ -66,12 +86,19 @@ def update_encoder_values():
       global turns
       global rotation
       global result
+      global distance
 
       result=spi.xfer2([AMT22_NOP, AMT22_READ_TURNS, AMT22_NOP, AMT22_NOP],speed_hz,delay_us)
 
       rotation=16383-((result[0] & 0b111111) << 8) + result[1] # 0 - 16383 Pro umdrehung
 
       turns=255-result[3]
+
+      #Convert RAW encoder data to Wheel-Turns float
+      fturn = turns+( (rotation-4500)/16383 )
+
+      #Convert Turns to Distance(Buoy, UUV)
+      distance = fturn/2.3806
 
       #lenght=(((calibturns-turns)*16383)-rotation+calibtotat)/370
       #print(lenght)
@@ -97,12 +124,15 @@ def rec_RTK():
     sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM) # UDP
     sock.bind((UDP_IP, UDP_PORT))
     while True:
-        data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
+        data, addr = sock.recvfrom(1024)
         print("received message: %s" % data)
+
+        #TODO: What is this?
         RTKLAT=1
         RTKLON=2
         FIXLAT=51.07205984
         FIXLON=13.59835664
+
         #Prüfen ob die Eingestellte RTK Koordinate richtig sein kann
         if abs(RTKLAT-FIXLAT) < 100:
             if abs(RTKLON-FIXLON) < 100:
@@ -119,7 +149,7 @@ def rec_RTK():
            RTK=False
            print("RTK fixpunkt falsch")
 
-def getAccuracy(distance, depth):
+def getAccuracyEquip(distance, depth):
    #--> Bestimme Genauigkeit im schnitt 2cm pro meter 2cm bis 10m danach 2m --> TODO: Why these values?
    if depth < 20:
       return math.sqrt((distance * 0.02)*(distance * 0.02) + 0,15 * 0,15)
@@ -127,34 +157,96 @@ def getAccuracy(distance, depth):
       return math.sqrt((distance * 0.02)*(distance * 0.02) + 2 * 2)
 
 
+#___________________________MAIN_______________________________        
 
-#   #___________________________MAIN_______________________________        
-#
-#   #start depth & compass thread
-#   thread_boot = threading.Thread(target=update_boot_values, args=(), daemon=True)
-#   thread_boot.start()
-#
-#   #start encoder thread
-#   thread_encoder = threading.Thread(target=update_encoder_values, args=(), daemon=True)
-#   thread_encoder.start()
-#
-#   while True:
-#      os.system("clear")
-#      #print(GPS.lat)
-#GET GPS FROM SERIAL
+#start depth & compass thread
+thread_boot = threading.Thread(target=update_boot_values, args=(), daemon=True)
+thread_boot.start()
+
+#start encoder thread
+thread_encoder = threading.Thread(target=update_encoder_values, args=(), daemon=True)
+thread_encoder.start()
+
+while True:
+
+#GET GGA FROM SERIAL
+   try:
+      print("Waiting for GGA...")
+      nmea_str = readSerialNMEA(ser)
+      print(nmea_str)
+      nmea_obj = pynmea2.parse(nmea_str, check=False)
 
 #GET GPS FROM RTK
+      if RTK:
+         print("RTK Active")
+      else:
+         print("RTK not Active")
 
 #CORRECT GPS WITH RTK
+      RTKX= 0	#--> RTK Offset X (DUMMY)
+      RTKY= 0	#--> RTK Offset Y (DUMMY)
 
-#CALCULATE OFFSET
+
+#Calculate Offset with Pythagoras | distance² = depth² + offset²
+      correction = math.sqrt(math.pow(distance,2) - math.pow(depth,2))
+      print("Correction-offset:" + str(correction) + "m")
 
 #CONVERT TO UTM
+      #offset meters to UTM
+      UTMY=math.sin(compass)*correction
+      UTMX=math.cos(compass)*correction
 
+      #--> Coordinates to gdal point
+      point.AddPoint(nmea_obj.latitude, nmea_obj.longitude)
+
+      #--> Transform to UTM
+      point.Transform(transform)
+
+      if RTK:
+         point.AddPoint(point.GetX()+RTKX, point.GetY()+RTKY)
+         Accuracy = getAccuracyEquip(distance, depth) + 0,35
+      else:
+         Accuracy = getAccuracyEquip(distance, depth) + 3
+      print("Accuracy:" + str(Accuracy) + "m")
+
+      #--> Actual Correction
+      point.AddPoint(point.GetX()+UTMX, point.GetY()+UTMY)
+
+      #--> Transform back to WGS84
+      point.Transform(transformback)
+      
 #GENERATE GGA
-
+      new_nmea = pynmea2.GGA('GP', 'GGA', (nmea_obj.timestamp, 
+                                                   point.GetX(), 
+                                                   nmea_obj.lat_dir, 
+                                                   point.GetY(),
+                                                   nmea_obj.lon_dir, 
+                                                   2,                         # Fix Type 2 = D-GPS
+                                                   nmea_obj.num_sats, 
+                                                   nmea_obj.horizontal_dil, 
+                                                   nmea_obj.altitude, 
+                                                   nmea_obj.altitude_units, 
+                                                   nmea_obj.geo_sep, 
+                                                   nmea_obj.geo_sep_units, 
+                                                   nmea_obj.age_gps_data,     # Age of correction data?
+                                                   nmea_obj.ref_station_id))
+      print("New GGA:\n"+str(new_nmea))
+      
 #LOG EVERYTHING TO CSV
+      csvlogger.info([nmea_str, str(new_nmea), 0, distance, compass, depth, Accuracy])
+   
+#SEND TO ROV
+      print("Sending to ROV...")
+      print(str(new_nmea)+"\n")
+      sock_boot.sendto(bytes(str(new_nmea)+"\n",encoding='utf8'), (BOOT_IP, BOOT_PORT))
 
+
+   except pynmea2.ParseError as e:
+        print("Parse error: {0}".format(e))
+
+
+
+#         os.system("clear")
 #      #Print boot data
 #      print("Tiefe")
 #      print(depth)
@@ -215,5 +307,3 @@ def getAccuracy(distance, depth):
 #      #Bitte im Paket angeben statt fix DGPS
 #   
 #      time.sleep(0.5)
-
-print(readSerialNMEA(ser))
