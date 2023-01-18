@@ -70,6 +70,12 @@ csvlogger = CsvLogger(filename=log_filepath,
                       max_files=50,
                       header=header)
 
+def decTodms(deg):
+     d = int(deg)
+     md = abs(deg - d) * 60
+     m = int(md)
+     s = (md - m) * 60
+     return "{:03d}{:07.4f}".format(d, m + (s / 60))
 
 def update_boot_values():
    while True:
@@ -217,10 +223,10 @@ while True:
       point.Transform(transformback)
       
 #GENERATE GGA
-      new_nmea = pynmea2.GGA('GN', 'GGA', (str(nmea_obj.timestamp), 
-                                                   str(point.GetX()), 
+      new_nmea = pynmea2.GGA('GN', 'GGA', (nmea_obj.timestamp.strftime("%H%M%S.%f"), 
+                                                   decTodms(point.GetX()), 
                                                    str(nmea_obj.lat_dir), 
-                                                   str(point.GetY()),
+                                                   decTodms(point.GetY()),
                                                    str(nmea_obj.lon_dir), 
                                                    str(2),                         # Fix Type 2 = D-GPS
                                                    str(nmea_obj.num_sats), 
@@ -231,7 +237,7 @@ while True:
                                                    str(nmea_obj.geo_sep_units), 
                                                    str(nmea_obj.age_gps_data),     # Age of correction data?
                                                    str(nmea_obj.ref_station_id)))
-      print("New GGA:\n"+str(new_nmea))
+      print("\nNew GGA:\n"+str(new_nmea))
 
 #LOG EVERYTHING TO CSV
       csvlogger.info([nmea_str, str(new_nmea), 0, distance, compass, depth, Accuracy])
@@ -241,6 +247,8 @@ while True:
       print(str(new_nmea)+"\n")
       sock_boot.sendto(bytes(str(new_nmea)+"\n",encoding='utf8'), (BOOT_IP, BOOT_PORT))
 
+
+      print("----------------------------------------")
 
    except pynmea2.ParseError as e:
         print("Parse error: {0}".format(e))
