@@ -217,30 +217,29 @@ while True:
       point.Transform(transformback)
       
 #GENERATE GGA
-      new_nmea = pynmea2.GGA('GP', 'GGA', (nmea_obj.timestamp, 
-                                                   point.GetX(), 
-                                                   nmea_obj.lat_dir, 
-                                                   point.GetY(),
-                                                   nmea_obj.lon_dir, 
-                                                   2,                         # Fix Type 2 = D-GPS
-                                                   nmea_obj.num_sats, 
-                                                   nmea_obj.horizontal_dil, 
-                                                   nmea_obj.altitude, 
-                                                   nmea_obj.altitude_units, 
-                                                   nmea_obj.geo_sep, 
-                                                   nmea_obj.geo_sep_units, 
-                                                   nmea_obj.age_gps_data,     # Age of correction data?
-                                                   nmea_obj.ref_station_id))
-      new_nmea_obj = pynmea2.parse(new_nmea, check=False)
-      print("New GGA:\n"+str(new_nmea_str))
+      new_nmea = pynmea2.GGA('GN', 'GGA', (str(nmea_obj.timestamp), 
+                                                   str(point.GetX()), 
+                                                   str(nmea_obj.lat_dir), 
+                                                   str(point.GetY()),
+                                                   str(nmea_obj.lon_dir), 
+                                                   str(2),                         # Fix Type 2 = D-GPS
+                                                   str(nmea_obj.num_sats), 
+                                                   str(nmea_obj.horizontal_dil), 
+                                                   str(nmea_obj.altitude), 
+                                                   str(nmea_obj.altitude_units), 
+                                                   str(nmea_obj.geo_sep), 
+                                                   str(nmea_obj.geo_sep_units), 
+                                                   str(nmea_obj.age_gps_data),     # Age of correction data?
+                                                   str(nmea_obj.ref_station_id)))
+      print("New GGA:\n"+str(new_nmea))
 
 #LOG EVERYTHING TO CSV
-      csvlogger.info([nmea_str, repr(new_nmea), 0, distance, compass, depth, Accuracy])
+      csvlogger.info([nmea_str, str(new_nmea), 0, distance, compass, depth, Accuracy])
    
 #SEND TO ROV
       print("Sending to ROV...")
       print(str(new_nmea)+"\n")
-      sock_boot.sendto(bytes(repr(new_nmea)+"\n",encoding='utf8'), (BOOT_IP, BOOT_PORT))
+      sock_boot.sendto(bytes(str(new_nmea)+"\n",encoding='utf8'), (BOOT_IP, BOOT_PORT))
 
 
    except pynmea2.ParseError as e:
