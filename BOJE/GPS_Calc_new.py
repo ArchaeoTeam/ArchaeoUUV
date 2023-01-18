@@ -231,10 +231,10 @@ while True:
                                                    nmea_obj.geo_sep_units, 
                                                    nmea_obj.age_gps_data,     # Age of correction data?
                                                    nmea_obj.ref_station_id))
-      print("New GGA:\n"+str(new_nmea))
+      print("New GGA:\n"+repr(new_nmea))
 
 #LOG EVERYTHING TO CSV
-      csvlogger.info([nmea_str, str(new_nmea), 0, distance, compass, depth, Accuracy])
+      csvlogger.info([nmea_str, repr(new_nmea), 0, distance, compass, depth, Accuracy])
    
 #SEND TO ROV
       print("Sending to ROV...")
