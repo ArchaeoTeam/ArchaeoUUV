@@ -110,11 +110,11 @@ def update_encoder_values():
       #print(lenght)
 
 def readSerialNMEA(ser):
-   line = ""
    try:
-      while (line.startswith('$GNGGA') == False):
+      while True:
          line = ser.readline().decode('ascii', errors='replace')
-      return line
+         if (line != None and line.startswith('$GNGGA')):    
+            return line
    except:
       pass
 
@@ -183,11 +183,9 @@ while True:
       print(nmea_str)
       nmea_obj = pynmea2.parse(nmea_str, check=False)
 
-#GET GPS FROM RTK
-      if RTK:
-         print("RTK Active")
-      else:
-         print("RTK not Active")
+#GET GPS FROM RTK 
+   #TODO: RTK, DGPS, NTRIP, RTCM message...? auf dem RTK läuft ein NTRIP-Server
+   
 
 #CORRECT GPS WITH RTK
       RTKX= 0	#--> RTK Offset X (DUMMY)
@@ -243,8 +241,7 @@ while True:
       csvlogger.info([nmea_str, str(new_nmea), 0, distance, compass, depth, Accuracy])
    
 #SEND TO ROV
-      print("Sending to ROV...")
-      print(str(new_nmea)+"\n")
+      print("Sending to ROV "+BOOT_IP+":"+str(BOOT_PORT) + "...")
       sock_boot.sendto(bytes(str(new_nmea)+"\n",encoding='utf8'), (BOOT_IP, BOOT_PORT))
 
 
