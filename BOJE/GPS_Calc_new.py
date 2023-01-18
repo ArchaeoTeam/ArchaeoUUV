@@ -231,7 +231,8 @@ while True:
                                                    nmea_obj.geo_sep_units, 
                                                    nmea_obj.age_gps_data,     # Age of correction data?
                                                    nmea_obj.ref_station_id))
-      print("New GGA:\n"+repr(new_nmea))
+      new_nmea_obj = pynmea2.parse(new_nmea, check=False)
+      print("New GGA:\n"+str(new_nmea_str))
 
 #LOG EVERYTHING TO CSV
       csvlogger.info([nmea_str, repr(new_nmea), 0, distance, compass, depth, Accuracy])
@@ -239,7 +240,7 @@ while True:
 #SEND TO ROV
       print("Sending to ROV...")
       print(str(new_nmea)+"\n")
-      sock_boot.sendto(bytes(str(new_nmea)+"\n",encoding='utf8'), (BOOT_IP, BOOT_PORT))
+      sock_boot.sendto(bytes(repr(new_nmea)+"\n",encoding='utf8'), (BOOT_IP, BOOT_PORT))
 
 
    except pynmea2.ParseError as e:
