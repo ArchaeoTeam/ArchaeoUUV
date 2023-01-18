@@ -152,12 +152,13 @@ def rec_RTK():
 def getAccuracyEquip(distance, depth):
    #--> Bestimme Genauigkeit im schnitt 2cm pro meter 2cm bis 10m danach 2m --> TODO: Why these values?
    if depth < 20:
-      return math.sqrt((distance * 0.02)*(distance * 0.02) + 0,15 * 0,15)
+      return math.sqrt((distance * 0.02)*(distance * 0.02) + 0.15 * 0.15)
    else:
       return math.sqrt((distance * 0.02)*(distance * 0.02) + 2 * 2)
 
 
 #___________________________MAIN_______________________________        
+print("Starting Worker Threads...")
 
 #start depth & compass thread
 thread_boot = threading.Thread(target=update_boot_values, args=(), daemon=True)
@@ -167,11 +168,11 @@ thread_boot.start()
 thread_encoder = threading.Thread(target=update_encoder_values, args=(), daemon=True)
 thread_encoder.start()
 
-while True:
+print("Waiting for GGA-Messages...")
 
+while True:
 #GET GGA FROM SERIAL
    try:
-      print("Waiting for GGA...")
       nmea_str = readSerialNMEA(ser)
       print(nmea_str)
       nmea_obj = pynmea2.parse(nmea_str, check=False)
@@ -231,7 +232,7 @@ while True:
                                                    nmea_obj.age_gps_data,     # Age of correction data?
                                                    nmea_obj.ref_station_id))
       print("New GGA:\n"+str(new_nmea))
-      
+
 #LOG EVERYTHING TO CSV
       csvlogger.info([nmea_str, str(new_nmea), 0, distance, compass, depth, Accuracy])
    
