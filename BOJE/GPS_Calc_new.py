@@ -31,12 +31,13 @@ AMT22_NOP = 0x00
 AMT22_RESET = 0x60
 AMT22_ZERO = 0x70
 AMT22_READ_TURNS = 0xA0
-
 NEWLINE = 0x0A
 TAB = 0x09
 spi = spidev.SpiDev() #create the spi object
 spi.open(0, 0) #SPI port 0, CS 0
 speed_hz=500000 #setting the speed in hz
+
+#ENCODER VALUES
 delay_us=3 #setting the delay in microseconds
 Accuracy = 0
 turns = 0
@@ -47,6 +48,8 @@ alt_url="http://192.168.2.2:6040/mavlink/vehicles/1/components/1/messages/AHRS2/
 compass_url="http://192.168.2.2:6040/mavlink/vehicles/1/components/1/messages/VFR_HUD/message/heading"
 depth = 0
 compass = 0
+
+ser = serial.Serial('/dev/serial0', baudrate=115200)
 
 def update_boot_values():
    while True:
@@ -73,17 +76,15 @@ def update_encoder_values():
       #lenght=(((calibturns-turns)*16383)-rotation+calibtotat)/370
       #print(lenght)
 
-def readSerialNMEA():
+def readSerialNMEA(ser):
+   line = ""
    try:
-      ser = serial.Serial('/dev/serial0', baudrate=115200)
-      while True:
+      while (line.startswith('$GNGGA') == False):
          line = ser.readline().decode('ascii', errors='replace')
-         if line[0:6] == '$GNGGA' or line[0:6] == '$GNRMC':
-            print(line.strip())
+      return line
    except:
-      print("Error reading serial port")
-      readSerialNMEA();
-      
+      pass
+
 def send_RTK():
     while True:
         time.sleep(5)
@@ -126,7 +127,7 @@ def getAccuracy(distance, depth):
       return math.sqrt((distance * 0.02)*(distance * 0.02) + 2 * 2)
 
 
-#def test():
+
 #   #___________________________MAIN_______________________________        
 #
 #   #start depth & compass thread
@@ -139,6 +140,21 @@ def getAccuracy(distance, depth):
 #
 #   while True:
 #      os.system("clear")
+#      #print(GPS.lat)
+#GET GPS FROM SERIAL
+
+#GET GPS FROM RTK
+
+#CORRECT GPS WITH RTK
+
+#CALCULATE OFFSET
+
+#CONVERT TO UTM
+
+#GENERATE GGA
+
+#LOG EVERYTHING TO CSV
+
 #      #Print boot data
 #      print("Tiefe")
 #      print(depth)
@@ -200,4 +216,4 @@ def getAccuracy(distance, depth):
 #   
 #      time.sleep(0.5)
 
-readSerialNMEA()
+print(readSerialNMEA(ser))
