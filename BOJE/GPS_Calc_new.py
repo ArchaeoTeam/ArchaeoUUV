@@ -53,7 +53,7 @@ depth = 0
 compass = 0
 
 #SERIAL GPS
-ser = serial.Serial('/dev/serial0', baudrate=115200)
+ser = serial.Serial('/dev/serial0', baudrate=115200, timeout = 5)
 
 #ROV SOCKET
 BOOT_IP = "192.168.2.2"
@@ -116,7 +116,7 @@ def readSerialNMEA(ser):
          if (line != None and line.startswith('$GNGGA')):    
             return line
    except:
-      pass
+      print("Got nothing")
 
 def send_RTK():
     while True:
@@ -179,6 +179,7 @@ print("Waiting for GGA-Messages...")
 while True:
 #GET GGA FROM SERIAL
    try:
+      #TODO: Manchmal kommt hier ein None durch, wieso?
       nmea_str = readSerialNMEA(ser)
       print(nmea_str)
       nmea_obj = pynmea2.parse(nmea_str, check=False)
@@ -243,7 +244,6 @@ while True:
 #SEND TO ROV
       print("Sending to ROV "+BOOT_IP+":"+str(BOOT_PORT) + "...")
       sock_boot.sendto(bytes(str(new_nmea)+"\n",encoding='utf8'), (BOOT_IP, BOOT_PORT))
-
 
       print("----------------------------------------")
 
