@@ -110,13 +110,13 @@ def update_encoder_values():
       #print(lenght)
 
 def readSerialNMEA(ser):
-   try:
-      while True:
+   while True:
+      try: 
          line = ser.readline().decode('ascii', errors='replace')
-         if (line != None and line.startswith('$GNGGA')):    
+         if (line != None and (line.startswith('$GNGGA') or line.startswith('$GPGGA'))):    
             return line
-   except:
-      print("Got nothing")
+      except:
+         print("Got nothing")
 
 def send_RTK():
     while True:
