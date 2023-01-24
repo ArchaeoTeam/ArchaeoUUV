@@ -202,82 +202,83 @@ counter = 0
 while True:
    correction_possible = True
    ####GET GGA FROM SERIAL
-   try:
-      #TODO: Manchmal kommt hier ein None durch, wieso?
-      nmea_str = readSerialNMEA(ser)
-      if correction_possible:
-         print(str(counter)+"\n----------------------------------------")
-         print(nmea_str)
+   
+   #TODO: Manchmal kommt hier ein None durch, wieso?
+   nmea_str = readSerialNMEA(ser)
+   if correction_possible:
+      print(str(counter)+"\n----------------------------------------")
+      print(nmea_str)
+
+      try:
          nmea_obj = pynmea2.parse(nmea_str, check=False)
-
-         ####GET GPS FROM RTK 
-         #TODO: RTK, DGPS, NTRIP, RTCM message...? auf dem RTK läuft ein NTRIP-Server
-      
-
-         ####CORRECT GPS WITH RTK
-         RTKX= 0	#--> RTK Offset X (DUMMY)
-         RTKY= 0	#--> RTK Offset Y (DUMMY)
-
-
-         ####Calculate Offset with Pythagoras | distance² = depth² + offset²
-         correction = math.sqrt(math.pow(distance,2) - math.pow(depth,2))
-         print("Correction-offset:" + str(correction) + "m")
-
-         ####CONVERT TO UTM
-         #offset meters to UTM
-         UTMY=math.sin(compass)*correction
-         UTMX=math.cos(compass)*correction
-
-         #--> Coordinates to gdal point
-         point.AddPoint(nmea_obj.latitude, nmea_obj.longitude)
-
-         #--> Transform to UTM
-         point.Transform(transform)
-
-         if RTK:
-            point.AddPoint(point.GetX()+RTKX, point.GetY()+RTKY)
-            Accuracy = getAccuracyEquip(distance, depth) + 0,35
-         else:
-            Accuracy = getAccuracyEquip(distance, depth) + 3
-         print("Accuracy:" + str(Accuracy) + "m")
-
-         #--> Actual Correction
-         point.AddPoint(point.GetX()+UTMX, point.GetY()+UTMY)
-
-         #--> Transform back to WGS84
-         point.Transform(transformback)
+      except pynmea2.ParseError as e:
+         print("Parse error: {0}".format(e))
+         continue
          
-         ####GENERATE GGA
-         new_nmea = pynmea2.GGA('GN', 'GGA', (nmea_obj.timestamp.strftime("%H%M%S.000"), 
-                                                      decTodms(point.GetX()), 
-                                                      str(nmea_obj.lat_dir), 
-                                                      decTodms(point.GetY()),
-                                                      str(nmea_obj.lon_dir), 
-                                                      str(2),                         # Fix Type 2 = D-GPS
-                                                      str(nmea_obj.num_sats), 
-                                                      str(nmea_obj.horizontal_dil), 
-                                                      str(nmea_obj.altitude), 
-                                                      str(nmea_obj.altitude_units), 
-                                                      str(nmea_obj.geo_sep), 
-                                                      str(nmea_obj.geo_sep_units), 
-                                                      str(nmea_obj.age_gps_data),     # Age of correction data?
-                                                      str(nmea_obj.ref_station_id)))
-         print("\nNew GGA:\n"+str(new_nmea))
+      ####GET GPS FROM RTK 
+      #TODO: RTK, DGPS, NTRIP, RTCM message...? auf dem RTK läuft ein NTRIP-Server
+   
 
-         ####LOG EVERYTHING TO CSV
-         csvlogger.info([nmea_str.rstrip(), str(new_nmea), 0, distance, compass, depth, Accuracy])
-      
-         ####SEND TO ROV
-         print("Sending to ROV "+BOOT_IP+":"+str(BOOT_PORT) + "...")
-         sock_boot.sendto(bytes(str(new_nmea)+"\n",encoding='utf8'), (BOOT_IP, BOOT_PORT))
-         counter+=1
-         print("----------------------------------------")
+      ####CORRECT GPS WITH RTK
+      RTKX= 0	#--> RTK Offset X (DUMMY)
+      RTKY= 0	#--> RTK Offset Y (DUMMY)
+
+
+      ####Calculate Offset with Pythagoras | distance² = depth² + offset²
+      correction = math.sqrt(math.pow(distance,2) - math.pow(depth,2))
+      print("Correction-offset:" + str(correction) + "m")
+
+      ####CONVERT TO UTM
+      #offset meters to UTM
+      UTMY=math.sin(compass)*correction
+      UTMX=math.cos(compass)*correction
+
+      #--> Coordinates to gdal point
+      point.AddPoint(nmea_obj.latitude, nmea_obj.longitude)
+
+      #--> Transform to UTM
+      point.Transform(transform)
+
+      if RTK:
+         point.AddPoint(point.GetX()+RTKX, point.GetY()+RTKY)
+         Accuracy = getAccuracyEquip(distance, depth) + 0,35
       else:
-         print("#Correction skipped... something missing here...#")
-      
+         Accuracy = getAccuracyEquip(distance, depth) + 3
+      print("Accuracy:" + str(Accuracy) + "m")
 
-   except pynmea2.ParseError as e:
-        print("Parse error: {0}".format(e))
+      #--> Actual Correction
+      point.AddPoint(point.GetX()+UTMX, point.GetY()+UTMY)
+
+      #--> Transform back to WGS84
+      point.Transform(transformback)
+      
+      ####GENERATE GGA
+      new_nmea = pynmea2.GGA('GN', 'GGA', (nmea_obj.timestamp.strftime("%H%M%S.000"), 
+                                                   decTodms(point.GetX()), 
+                                                   str(nmea_obj.lat_dir), 
+                                                   decTodms(point.GetY()),
+                                                   str(nmea_obj.lon_dir), 
+                                                   str(2),                         # Fix Type 2 = D-GPS
+                                                   str(nmea_obj.num_sats), 
+                                                   str(nmea_obj.horizontal_dil), 
+                                                   str(nmea_obj.altitude), 
+                                                   str(nmea_obj.altitude_units), 
+                                                   str(nmea_obj.geo_sep), 
+                                                   str(nmea_obj.geo_sep_units), 
+                                                   str(nmea_obj.age_gps_data),     # Age of correction data?
+                                                   str(nmea_obj.ref_station_id)))
+      print("\nNew GGA:\n"+str(new_nmea))
+
+      ####LOG EVERYTHING TO CSV
+      csvlogger.info([nmea_str.rstrip(), str(new_nmea), 0, distance, compass, depth, Accuracy])
+   
+      ####SEND TO ROV
+      print("Sending to ROV "+BOOT_IP+":"+str(BOOT_PORT) + "...")
+      sock_boot.sendto(bytes(str(new_nmea)+"\n",encoding='utf8'), (BOOT_IP, BOOT_PORT))
+      counter+=1
+      print("----------------------------------------")
+   else:
+      print("#Correction skipped... something missing here...#")
 
 
 
