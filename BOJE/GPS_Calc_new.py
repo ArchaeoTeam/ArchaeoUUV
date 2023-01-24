@@ -198,7 +198,7 @@ thread_encoder = threading.Thread(target=update_encoder_values, args=(), daemon=
 thread_encoder.start()
 
 print("Waiting for GGA-Messages...")
-
+counter = 0
 while True:
    correction_possible = True
    ####GET GGA FROM SERIAL
@@ -206,7 +206,7 @@ while True:
       #TODO: Manchmal kommt hier ein None durch, wieso?
       nmea_str = readSerialNMEA(ser)
       if correction_possible:
-         print("----------------------------------------")
+         print(counter+"\n----------------------------------------")
          print(nmea_str)
          nmea_obj = pynmea2.parse(nmea_str, check=False)
 
@@ -248,7 +248,7 @@ while True:
          point.Transform(transformback)
          
          ####GENERATE GGA
-         new_nmea = pynmea2.GGA('GN', 'GGA', (nmea_obj.timestamp.strftime("%H%M%S.%f"), 
+         new_nmea = pynmea2.GGA('GN', 'GGA', (nmea_obj.timestamp.strftime("%H%M%S.000"), 
                                                       decTodms(point.GetX()), 
                                                       str(nmea_obj.lat_dir), 
                                                       decTodms(point.GetY()),
