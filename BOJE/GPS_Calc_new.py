@@ -68,6 +68,7 @@ header = ['date', 'NMEA_rover', 'NMEA_corrected', 'NMEA_base', 'tether_length', 
 csvlogger = CsvLogger(filename=log_filepath,
                       delimiter=delimiter,
                       max_files=50,
+                      datefmt='%Y-%m-%d %H:%M:%S:%f',
                       header=header)
 
 def decTodms(deg):
@@ -82,10 +83,12 @@ def update_boot_values():
       global depth
       global compass
 
-      alt = float(requests.get(alt_url).text)
-
-      depth = 0.0 if alt < 0.0 else alt  #the ROV cannot fly yet
-      compass = float(requests.get(compass_url).text)
+      try:
+         alt = float(requests.get(alt_url).text)
+         depth = 0.0 if alt < 0.0 else alt  #the ROV cannot fly yet
+         compass = float(requests.get(compass_url).text)
+      except requests.exceptions.RequestException as e:  # This is the correct syntax
+         print("Failed to GET depth and compass values from ROV...")
 
 def update_encoder_values():
    while True:
@@ -115,7 +118,7 @@ def readSerialNMEA(ser):
          line = ser.readline().decode('ascii', errors='replace')
          if (line != None and (line.startswith('$GNGGA') or line.startswith('$GPGGA'))):    
             return line
-      except:
+      except :
          print("Got nothing")
 
 def send_RTK():
@@ -239,7 +242,7 @@ while True:
       print("\nNew GGA:\n"+str(new_nmea))
 
 #LOG EVERYTHING TO CSV
-      csvlogger.info([nmea_str, str(new_nmea), 0, distance, compass, depth, Accuracy])
+      csvlogger.info([nmea_str.rstrip(), str(new_nmea), 0, distance, compass, depth, Accuracy])
    
 #SEND TO ROV
       print("Sending to ROV "+BOOT_IP+":"+str(BOOT_PORT) + "...")
