@@ -206,7 +206,7 @@ while True:
       #TODO: Manchmal kommt hier ein None durch, wieso?
       nmea_str = readSerialNMEA(ser)
       if correction_possible:
-         print(counter+"\n----------------------------------------")
+         print(str(counter)+"\n----------------------------------------")
          print(nmea_str)
          nmea_obj = pynmea2.parse(nmea_str, check=False)
 
@@ -270,7 +270,7 @@ while True:
          ####SEND TO ROV
          print("Sending to ROV "+BOOT_IP+":"+str(BOOT_PORT) + "...")
          sock_boot.sendto(bytes(str(new_nmea)+"\n",encoding='utf8'), (BOOT_IP, BOOT_PORT))
-
+         counter+=1
          print("----------------------------------------")
       else:
          print("#Correction skipped... something missing here...#")
