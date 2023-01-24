@@ -219,9 +219,16 @@ thread_boot.start()
 thread_encoder = threading.Thread(target=update_encoder_values, args=(), daemon=True)
 thread_encoder.start()
 
+#start DGPS thread
+# thread_encoder = threading.Thread(target=rec_RTK, args=(), daemon=True)
+# thread_encoder.start()
+
 print("Waiting for GGA-Messages...")
 counter = 0
 
+
+# TESTE HIER NOCH EINMAL DAS EMPFANGEN
+# ICH DENKE DASS DAS PROBLEM HIER LIEGT NICHT SUDO -.-
 rec_RTK()
 
 while False:
