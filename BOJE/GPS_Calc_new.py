@@ -9,12 +9,12 @@ import math
 import pynmea2
 from csv_logger import CsvLogger
 import logging
-
+print("Starting GNSS Correction Service\nCalculating GDAL Geometry...")
 from osgeo.ogr import Geometry, wkbPoint
 from osgeo.osr import SpatialReference, SpatialReference, CoordinateTransformation
 
 correction_possible = True
-print("Starting GNSS Correction Service\nCalculating GDAL Geometry...")
+
 # DGPS
 source = SpatialReference()
 source.ImportFromEPSG(4326)
@@ -83,6 +83,8 @@ def decTodms(deg):
      return "{:03d}{:07.4f}".format(d, m + (s / 60))
 
 def update_boot_values():
+   fail_counter = 0
+
    while True:
       global depth
       global compass
@@ -92,10 +94,14 @@ def update_boot_values():
          alt = float(requests.get(alt_url).text)
          depth = 0.0 if alt < 0.0 else alt  #the ROV cannot fly yet
          compass = float(requests.get(compass_url).text)
+         fail_counter = 0
       except requests.exceptions.RequestException as e:  # This is the correct syntax
          print("Failed to GET depth and compass values from ROV...")
-
-         correction_possible = False
+         fail_counter += 1
+         if fail_counter > 10:
+            correction_possible = False
+            print("No connection to ROV. GNSS correction is not possible!")
+      time.sleep(0.1)
 
 def update_encoder_values():
    while True:
@@ -115,6 +121,8 @@ def update_encoder_values():
 
       #Convert Turns to Distance(Buoy, UUV)
       distance = fturn/2.3806
+
+      time.sleep(0.01)
 
 def readSerialNMEA(ser):
    global correction_possible
@@ -192,6 +200,7 @@ thread_encoder.start()
 print("Waiting for GGA-Messages...")
 
 while True:
+   correction_possible = True
    ####GET GGA FROM SERIAL
    try:
       #TODO: Manchmal kommt hier ein None durch, wieso?
@@ -264,6 +273,7 @@ while True:
          print("----------------------------------------")
       else:
          print("Correction skipped... something missing here...")
+      
 
    except pynmea2.ParseError as e:
         print("Parse error: {0}".format(e))
