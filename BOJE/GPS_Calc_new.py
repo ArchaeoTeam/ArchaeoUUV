@@ -71,7 +71,7 @@ header = ['date', 'NMEA_rover', 'NMEA_corrected', 'NMEA_base', 'tether_length', 
 csvlogger = CsvLogger(filename=log_filepath,
                       delimiter=delimiter,
                       max_files=50,
-                      fmt='%(asctime)s.%(msecs)03d',
+                      fmt='%(asctime)s.%(msecs)03d,%(message)s',
                       datefmt='%Y-%m-%d %H:%M:%S',
                       header=header)
 
