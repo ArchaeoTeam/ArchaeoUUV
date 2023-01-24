@@ -148,35 +148,51 @@ def send_RTK():
         time.sleep(1)
         
 def rec_RTK():
-    UDP_IP = "192.168.2.3"
-    UDP_PORT = 28000
-    sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM) # UDP
-    sock.bind((UDP_IP, UDP_PORT))
-    while True:
-        data, addr = sock.recvfrom(1024)
-        print("received message: %s" % data)
+   global RTK
+   global RTKLAT
+   global RTKLON
 
-        #TODO: What is this?
-        RTKLAT=1
-        RTKLON=2
-        FIXLAT=51.07205984
-        FIXLON=13.59835664
+   UDP_IP = "192.168.2.3"
+   UDP_PORT = 28000
+   sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM) # UDP
+   sock.bind((UDP_IP, UDP_PORT))
+   while True:
+      data, addr = sock.recvfrom(1024)
+      print("received message: %s" % data)
+      
+      #PARSE NMEA
+      try:
+         d_nmea_obj = pynmea2.parse(nmea_str)
+      except pynmea2.ParseError as e:
+         print("Parse error: {0}".format(e))
+         continue
+      
+      # Base Station Koordinaten
+      RTKLAT=d_nmea_obj.latitude
+      RTKLON=d_nmea_obj.longitude
 
-        #Prüfen ob die Eingestellte RTK Koordinate richtig sein kann
-        if abs(RTKLAT-FIXLAT) < 100:
-            if abs(RTKLON-FIXLON) < 100:
-               RTK=True
-               RTKpoint(FIXLAT-RTKLAT,FIXLON-RTKLON)
-               RTKpoint.Transform(transform)
-               RTKX=RTKpoint.GetX()
-               RTKY=RTKpoint.GetY()
-               
-            else: 
-               RTK=False
-               print("RTK fixpunkt falsch")
-        else: 
-           RTK=False
-           print("RTK fixpunkt falsch")
+      #Fixpunkt Koordinaten TODO: Als Parameter einstellbar machen
+      FIXLAT=51.07205984
+      FIXLON=13.59835664
+
+      #Prüfen ob die Eingestellte RTK Koordinate richtig sein kann
+      if abs(RTKLAT-FIXLAT) < 100:
+         if abs(RTKLON-FIXLON) < 100:
+            RTK=True
+            RTKpoint(FIXLAT-RTKLAT,FIXLON-RTKLON)
+            RTKpoint.Transform(transform)
+            RTKX=RTKpoint.GetX()
+            RTKY=RTKpoint.GetY()
+
+            print("DGPS Lat/Lng: ", RTKLAT, RTKLON)
+            print("RTK X/Y: ", RTKX, RTKY)
+            
+         else: 
+            RTK=False
+            print("RTK fixpunkt falsch")
+      else: 
+         RTK=False
+         print("RTK fixpunkt falsch")
 
 def getAccuracyEquip(distance, depth):
    #--> Bestimme Genauigkeit im schnitt 2cm pro meter 2cm bis 10m danach 2m --> TODO: Why these values?
@@ -184,7 +200,6 @@ def getAccuracyEquip(distance, depth):
       return math.sqrt((distance * 0.02)*(distance * 0.02) + 0.15 * 0.15)
    else:
       return math.sqrt((distance * 0.02)*(distance * 0.02) + 2 * 2)
-
 
 
 
@@ -206,7 +221,10 @@ thread_encoder.start()
 
 print("Waiting for GGA-Messages...")
 counter = 0
-while True:
+
+rec_RTK()
+
+while False:
    correction_possible = True
    ####GET GGA FROM SERIAL
    
@@ -223,7 +241,12 @@ while True:
          continue
          
       ####GET GPS FROM RTK 
-      #TODO: RTK, DGPS, NTRIP, RTCM message...? auf dem RTK läuft ein NTRIP-Server
+      if RTK:
+         point.AddPoint(point.GetX()+RTKX, point.GetY()+RTKY)
+         Accuracy = getAccuracyEquip(distance, depth) + 0,35
+      else:
+         Accuracy = getAccuracyEquip(distance, depth) + 3
+      print("Accuracy:" + str(Accuracy) + " m")
    
 
       ####CORRECT GPS WITH RTK
@@ -233,7 +256,7 @@ while True:
 
       ####Calculate Offset with Pythagoras | distance² = depth² + offset²
       correction = math.sqrt(math.pow(distance,2) - math.pow(depth,2))
-      print("Correction-offset:" + str(correction) + "m")
+      print("Correction-offset:" + str(correction) + " m")
 
       ####CONVERT TO UTM
       #offset meters to UTM
@@ -245,13 +268,6 @@ while True:
 
       #--> Transform to UTM
       point.Transform(transform)
-
-      if RTK:
-         point.AddPoint(point.GetX()+RTKX, point.GetY()+RTKY)
-         Accuracy = getAccuracyEquip(distance, depth) + 0,35
-      else:
-         Accuracy = getAccuracyEquip(distance, depth) + 3
-      print("Accuracy:" + str(Accuracy) + "m")
 
       #--> Actual Correction
       point.AddPoint(point.GetX()+UTMX, point.GetY()+UTMY)
