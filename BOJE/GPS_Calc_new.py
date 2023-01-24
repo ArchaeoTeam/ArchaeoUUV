@@ -206,6 +206,7 @@ while True:
       #TODO: Manchmal kommt hier ein None durch, wieso?
       nmea_str = readSerialNMEA(ser)
       if correction_possible:
+         print("----------------------------------------")
          print(nmea_str)
          nmea_obj = pynmea2.parse(nmea_str, check=False)
 
@@ -272,7 +273,7 @@ while True:
 
          print("----------------------------------------")
       else:
-         print("Correction skipped... something missing here...")
+         print("#Correction skipped... something missing here...#")
       
 
    except pynmea2.ParseError as e:
