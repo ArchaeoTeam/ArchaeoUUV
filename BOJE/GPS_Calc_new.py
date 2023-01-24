@@ -71,7 +71,7 @@ header = ['date', 'NMEA_rover', 'NMEA_corrected', 'NMEA_base', 'tether_length', 
 csvlogger = CsvLogger(filename=log_filepath,
                       delimiter=delimiter,
                       max_files=50,
-                      fmt='%(asctime)s.%(msecs)03d,%(message)s',
+                      fmt='%(asctime)s.%(msecs)03d;%(message)s',
                       datefmt='%Y-%m-%d %H:%M:%S',
                       header=header)
 
@@ -186,7 +186,14 @@ def getAccuracyEquip(distance, depth):
       return math.sqrt((distance * 0.02)*(distance * 0.02) + 2 * 2)
 
 
+
+
+
+
+
 #___________________________MAIN_______________________________        
+
+
 print("Starting Worker Threads...")
 
 #start depth & compass thread
@@ -210,7 +217,7 @@ while True:
       print(nmea_str)
 
       try:
-         nmea_obj = pynmea2.parse(nmea_str, check=False)
+         nmea_obj = pynmea2.parse(nmea_str)
       except pynmea2.ParseError as e:
          print("Parse error: {0}".format(e))
          continue
@@ -252,21 +259,26 @@ while True:
       #--> Transform back to WGS84
       point.Transform(transformback)
       
-      ####GENERATE GGA
-      new_nmea = pynmea2.GGA('GN', 'GGA', (nmea_obj.timestamp.strftime("%H%M%S.000"), 
-                                                   decTodms(point.GetX()), 
-                                                   str(nmea_obj.lat_dir), 
-                                                   decTodms(point.GetY()),
-                                                   str(nmea_obj.lon_dir), 
-                                                   str(2),                         # Fix Type 2 = D-GPS
-                                                   str(nmea_obj.num_sats), 
-                                                   str(nmea_obj.horizontal_dil), 
-                                                   str(nmea_obj.altitude), 
-                                                   str(nmea_obj.altitude_units), 
-                                                   str(nmea_obj.geo_sep), 
-                                                   str(nmea_obj.geo_sep_units), 
-                                                   str(nmea_obj.age_gps_data),     # Age of correction data?
-                                                   str(nmea_obj.ref_station_id)))
+      try:
+         ####GENERATE GGA
+         new_nmea = pynmea2.GGA('GN', 'GGA', (nmea_obj.timestamp.strftime("%H%M%S.000"), 
+                                                      decTodms(point.GetX()), 
+                                                      str(nmea_obj.lat_dir), 
+                                                      decTodms(point.GetY()),
+                                                      str(nmea_obj.lon_dir), 
+                                                      str(2),                         # Fix Type 2 = D-GPS
+                                                      str(nmea_obj.num_sats), 
+                                                      str(nmea_obj.horizontal_dil), 
+                                                      str(nmea_obj.altitude), 
+                                                      str(nmea_obj.altitude_units), 
+                                                      str(nmea_obj.geo_sep), 
+                                                      str(nmea_obj.geo_sep_units), 
+                                                      str(nmea_obj.age_gps_data),     # Age of correction data?
+                                                      str(nmea_obj.ref_station_id)))
+      except:
+         print("Error while generating GGA")
+         continue
+
       print("\nNew GGA:\n"+str(new_nmea))
 
       ####LOG EVERYTHING TO CSV
