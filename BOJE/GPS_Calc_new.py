@@ -211,17 +211,17 @@ def getAccuracyEquip(distance, depth):
 
 print("Starting Worker Threads...")
 
-# #start depth & compass thread
-# thread_boot = threading.Thread(target=update_boot_values, args=(), daemon=True)
-# thread_boot.start()
+#start depth & compass thread
+thread_boot = threading.Thread(target=update_boot_values, args=(), daemon=True)
+thread_boot.start()
 
-# #start encoder thread
-# thread_encoder = threading.Thread(target=update_encoder_values, args=(), daemon=True)
-# thread_encoder.start()
+#start encoder thread
+thread_encoder = threading.Thread(target=update_encoder_values, args=(), daemon=True)
+thread_encoder.start()
 
 #start DGPS thread
-# thread_encoder = threading.Thread(target=rec_RTK, args=(), daemon=True)
-# thread_encoder.start()
+thread_encoder = threading.Thread(target=rec_RTK, args=(), daemon=True)
+thread_encoder.start()
 
 print("Waiting for GGA-Messages...")
 counter = 0
