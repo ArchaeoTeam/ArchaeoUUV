@@ -202,10 +202,6 @@ def getAccuracyEquip(distance, depth):
       return math.sqrt((distance * 0.02)*(distance * 0.02) + 2 * 2)
 
 
-
-
-
-
 #___________________________MAIN_______________________________        
 
 
@@ -227,11 +223,7 @@ print("Waiting for GGA-Messages...")
 counter = 0
 
 
-# TESTE HIER NOCH EINMAL DAS EMPFANGEN
-# ICH DENKE DASS DAS PROBLEM HIER LIEGT NICHT SUDO -.-
-rec_RTK()
-
-while False:
+while True:
    correction_possible = True
    ####GET GGA FROM SERIAL
    
