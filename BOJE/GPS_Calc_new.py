@@ -158,11 +158,11 @@ def rec_RTK():
    sock.bind((UDP_IP, UDP_PORT))
    while True:
       data, addr = sock.recvfrom(1024)
-      print("received message: %s" % data.decode('ascii'))
+      print("received message: %s" % data)
       
       #PARSE NMEA
       try:
-         d_nmea_obj = pynmea2.parse(nmea_str)
+         d_nmea_obj = pynmea2.parse(data.decode('ascii'))
       except pynmea2.ParseError as e:
          print("Parse error: {0}".format(e))
          continue
