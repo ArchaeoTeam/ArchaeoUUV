@@ -158,7 +158,7 @@ def rec_RTK():
    sock.bind((UDP_IP, UDP_PORT))
    while True:
       data, addr = sock.recvfrom(1024)
-      print("received message: %s" % data)
+      print("received message: %s" % data.decode('ascii'))
       
       #PARSE NMEA
       try:
