@@ -26,105 +26,162 @@
                 <h1>Sensor 2 Mavlink</h1>
                 <!-- This card is from  https://vuetifyjs.com/en/components/cards/#outlined -->
                 <v-row>
-					<v-card class="mx-auto" max-width="130" max-height="150" outlined>
-                        <b>PH:</b>
-                        <v-text-field v-model="ph_value">
-                        </v-text-field>
+					<v-card class="mx-auto" max-width="250" max-height="150" outlined>
+                        <b>PH: <v-text-field max-width="50" v-model="ph_value">  </v-text-field> </b>
                     </v-card>
-					<v-card class="mx-auto" max-width="130" max-height="150" outlined>
+					<v-card class="mx-auto" max-width="250" max-height="150" outlined>
                         <b>TDS:</b>
                         <v-text-field v-model="tds_value">
                         </v-text-field>
                     </v-card>
-					<v-card class="mx-auto" max-width="130" max-height="150" outlined>
+					<v-card class="mx-auto" max-width="250" max-height="150" outlined>
                         <b>O2:</b>
                         <v-text-field v-model="o2_value">
                         </v-text-field>
                     </v-card>
-					<v-card class="mx-auto" max-width="130" max-height="150" outlined>
+					<v-card class="mx-auto" max-width="250" max-height="150" outlined>
                         <b>Turbidity:</b>
                         <v-text-field v-model="turbidity_value">
                         </v-text-field>
                     </v-card>
                 </v-row>
+                <v-row>
+                    <br>
+                </v-row>
+                <h1>Calibration</h1>
 				<v-row>
 				<br>
 				</v-row>
 				<v-row>
-                    <!--<v-card class="mx-auto" width="700" outlined>
-                        <v-slider
-                        hint="Im a hint"
-                        max="1.0"
-                        min="-1.0"
-                        step="0.05"
-                        @change="setServo"
-                      ></v-slider>
-                    </v-card>-->
+
 					
-					<v-card class="mx-auto" max-width="130" max-height="250" outlined>
-                        <b>PH-Calib Mult:</b>
+					<v-card class="mx-auto" max-width="140" max-height="250" outlined>
+                        <b>* PH-Calib:</b>
                         <v-text-field v-model="ph_calib_value">
                         </v-text-field>
                         <v-btn outlined rounded text @click="saveTextToBackend()">
                                 SET
                         </v-btn>
                     </v-card>
-					<v-card class="mx-auto" max-width="130" max-height="250" outlined>
-                        <b>PH-Calib Add:</b>
+					<v-card class="mx-auto" max-width="140" max-height="250" outlined>
+                        <b>+ PH-Calib:</b>
                         <v-text-field v-model="ph_calib_value2">
                         </v-text-field>
                         <v-btn outlined rounded text @click="saveTextToBackend()">
                                 SET
                         </v-btn>
                     </v-card>
-					<v-card class="mx-auto" max-width="130" max-height="250" outlined>
-                        <b>TDS-Calib:</b>
+					<v-card class="mx-auto" max-width="140" max-height="250" outlined>
+                        <b>* TDS-Calib:</b>
                         <v-text-field v-model="tds_calib_value">
                         </v-text-field>
                         <v-btn outlined rounded text @click="saveTextToBackend()">
                                 SET
                         </v-btn>
                     </v-card>
-					<v-card class="mx-auto" max-width="130" max-height="250" outlined>
-                        <b>TDS-Calib:</b>
+					<v-card class="mx-auto" max-width="140" max-height="250" outlined>
+                        <b>+ TDS-Calib:</b>
                         <v-text-field v-model="tds_calib_value2">
                         </v-text-field>
                         <v-btn outlined rounded text @click="saveTextToBackend()">
                                 SET
                         </v-btn>
                     </v-card>
-					<v-card class="mx-auto" max-width="130" max-height="250" outlined>
-                        <b>O2-Calib:</b>
+					<v-card class="mx-auto" max-width="140" max-height="250" outlined>
+                        <b>* O2-Calib:</b>
                         <v-text-field v-model="o2_calib_value">
                         </v-text-field>
                         <v-btn outlined rounded text @click="saveTextToBackend()">
                                 SET
                         </v-btn>
                     </v-card>
-					<v-card class="mx-auto" max-width="130" max-height="250" outlined>
-                        <b>O2-Calib:</b>
+					<v-card class="mx-auto" max-width="140" max-height="250" outlined>
+                        <b>+ O2-Calib:</b>
                         <v-text-field v-model="o2_calib_value2">
                         </v-text-field>
                         <v-btn outlined rounded text @click="saveTextToBackend()">
                                 SET
                         </v-btn>
                     </v-card>
-					<v-card class="mx-auto" max-width="130" max-height="250" outlined>
-                        <b>Tu-Calib:</b>
+					<v-card class="mx-auto" max-width="140" max-height="250" outlined>
+                        <b>* Tu-Calib:</b>
                         <v-text-field v-model="turbidity_calib_value">
                         </v-text-field>
                         <v-btn outlined rounded text @click="saveTextToBackend()">
                                 SET
                         </v-btn>
                     </v-card>
-					<v-card class="mx-auto" max-width="130" max-height="250" outlined>
-                        <b>Tu-Calib:</b>
+					<v-card class="mx-auto" max-width="140" max-height="250" outlined>
+                        <b>+ Tu-Calib:</b>
                         <v-text-field v-model="turbidity_calib_value2">
                         </v-text-field>
                         <v-btn outlined rounded text @click="saveTextToBackend()">
                                 SET
                         </v-btn>
                     </v-card>
+                </v-row>
+                <v-row>
+                    <br>
+                </v-row>
+                <h1>Sample Controller</h1>
+                <v-row>
+                    <br>
+                </v-row>
+                <v-row>
+                    <v-card class="mx-auto" max-width="300" max-height="250" outlined>
+                        <b>Probe 1 nehmen:</b>
+                        </v-text-field>
+                        <v-btn color="green" id="chamber1" outlined rounded text @click="setChamber(1)">
+                                Start
+                        </v-btn>
+                    </v-card>
+                    <v-card class="mx-auto" max-width="300" max-height="250" outlined>
+                        <b>Probe 2 nehmen:</b>
+                        </v-text-field>
+                        <v-btn color="green" id="chamber2" outlined rounded text @click="setChamber(2)">
+                                Start
+                        </v-btn>
+                    </v-card>
+
+
+                    <v-card class="mx-auto" max-width="300" max-height="250" outlined>
+                        <b>GoPro:</b>
+                        </v-text-field>
+                        <v-btn color="green" id="GoPro1" outlined rounded text @click="setGoPro(1)">
+                                Anschalten
+                        </v-btn>
+                    </v-card>
+                    <v-card class="mx-auto" max-width="300" max-height="250" outlined>
+                        <b>GoPro:</b>
+                        </v-text-field>
+                        <v-btn color="red" id="GoPro0" outlined rounded text @click="setGoPro(0)">
+                                Ausschalten
+                        </v-btn>
+                    </v-card>
+
+                </v-row>
+                <v-row>
+                    <br>
+                </v-row>
+                <h1>Systemzeit</h1>
+                <v-row>
+                    <br>
+                </v-row>
+                <v-row>
+                    
+                    <v-card class="mx-auto" max-width="300" max-height="250" outlined>
+                        <b>Zeit Boot</b>
+                        <v-text-field v-model="timeBoot"></v-text-field>
+                        <v-btn color="green" id="chamber1" outlined rounded text @click="setTime()">
+                                Synchronisieren
+                        </v-btn>
+                    </v-card>
+                    <v-card class="mx-auto" max-width="300" max-height="250" outlined>
+                        <b>Zeit Boje</b>
+                        <v-text-field v-model="timeBoje"></v-text-field>
+                    </v-card>
+
+                </v-row>
             </v-container>
         </v-main>
     </v-app>
@@ -154,18 +211,28 @@
 				o2_calib_value2: "0.0",
 				tds_calib_value2: "0.0",
 				ph_calib_value2: "0.0",
+                timeBoje: "",
+                timeBoot: "",
             }
         }, 
         methods: {
+
+
             async setServo(value) {
                 axios.post('/v1.0/setServo', null, {
-                    params: {
-                        pin: 18,
-                        pwm: value,
-                    }
+                    pin: 123,
                 })
             },
+
+
+
 			async loadTextFromBackend() {
+                axios.get("/v1.0/load_Boje_time").then(response => {
+                    this.timeBoje = response.data;
+                })
+                axios.get("/v1.0/load_Boot_time").then(response => {
+                    this.timeBoot = response.data;
+                })
                 axios.get("/v1.0/load_turbidity").then(response => {
                     this.turbidity_value = response.data;
                 })
@@ -203,6 +270,23 @@
                     this.ph_calib_value2 = response.data;
                 })
             },
+            async setChamber(value) {
+                axios.post('/v1.0/setChamber', {
+                    data: value,
+                })
+            },
+            async setGoPro(value) {
+                axios.post('/v1.0/setGoPro', {
+                    data: value,
+                })
+            },
+            async setTime() {
+                axios.post('/v1.0/setTime', {
+                    
+                })
+            },
+             
+
             async saveTextToBackend() {
                 axios.post('/v1.0/save_calib_turbidity', {
                     data: this.turbidity_calib_value,

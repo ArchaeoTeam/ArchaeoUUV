@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+
 from pathlib import Path
 import statistics
 import appdirs
@@ -13,9 +14,10 @@ from unsync import unsync
 from multiprocessing import Process
 
 from pydantic import BaseModel
+import os
 
 import threading
-
+import datetime
 import asyncio
 import json
 import os
@@ -27,6 +29,8 @@ import aiohttp
 import busio
 import adafruit_ads1x15.ads1115 as ADS
 from adafruit_ads1x15.analog_in import AnalogIn
+import RPi.GPIO as GPIO
+
 
 user_config_dir = Path(appdirs.user_config_dir())
 #os.mkdir(user_config_dir)
@@ -56,27 +60,20 @@ tds_calib2      =0.0
 ph_calib2       =0.0
 turbidity_calib2=0.0
 
-
-
-        
-        
-        
-
-
-
 class MM:
     def __init__(self) -> None:
-        #while True:
-        #    try:
-        #        i2c = busio.I2C(board.SCL, board.SDA)
-        #        ads = ADS.ADS1115(i2c)
-        #        chan0 = AnalogIn(ads, ADS.P0)
-        #        chan1 = AnalogIn(ads, ADS.P1)
-        #        chan2 = AnalogIn(ads, ADS.P2)
-        #        chan3 = AnalogIn(ads, ADS.P3)
-        #        break
-        #    except Exception:
-        #        print("InitError")
+        while True:
+            try:
+                i2c = busio.I2C(board.SCL, board.SDA)
+                ads = ADS.ADS1115(i2c)
+                chan0 = AnalogIn(ads, ADS.P0)
+                chan1 = AnalogIn(ads, ADS.P1)
+                chan2 = AnalogIn(ads, ADS.P2)
+                chan3 = AnalogIn(ads, ADS.P3)
+                break
+            except Exception:
+                print("InitError")
+        print("Init works")
         #asyncio.run(self.getSensors())
         self.time_since_boot = time.time()
         self.m2r_address = "http://localhost:6040/mavlink"
@@ -131,7 +128,7 @@ class MM:
             "epv": 0,
             "vel": 0,
             "cog": 0,
-            "satellites_visible": 22,
+            "satellites_visible": 0,
             "dgps_numch": 0,
             "dgps_age": 99999
             },
@@ -141,21 +138,21 @@ class MM:
 
     def getSensors(self) -> None:
         
-        #while True:
-        #    try:
-        #        i2c = busio.I2C(board.SCL, board.SDA)
-        #        ads = ADS.ADS1115(i2c)
-        #        chan0 = AnalogIn(ads, ADS.P0)
-        #        chan1 = AnalogIn(ads, ADS.P1)
-        #        chan2 = AnalogIn(ads, ADS.P2)
-        #        chan3 = AnalogIn(ads, ADS.P3)
-        #        break
-        #    except Exception:
-        #        print("InitError")
-                
+        while True:
+            try:
+                i2c = busio.I2C(board.SCL, board.SDA)
+                ads = ADS.ADS1115(i2c)
+                chan0 = AnalogIn(ads, ADS.P0)
+                chan1 = AnalogIn(ads, ADS.P1)
+                chan2 = AnalogIn(ads, ADS.P2)
+                chan3 = AnalogIn(ads, ADS.P3)
+                break
+            except Exception:
+                print("InitError")
+        print("readed Values")        
         list=[],[],[],[] 
         while True:
-            time.sleep(5.2)
+            time.sleep(0.1)
             #print("written")
             
             list_o2=list[0]
@@ -181,15 +178,14 @@ class MM:
                 tds_calib2 = float(f.read())
                 f=open(turbidity_calib_file2, "r")
                 turbidity_calib2 = float(f.read())
-                #print("written")
                 list_o2.append(chan0.voltage*o2_calib+o2_calib2)
                 list_tds.append(chan1.voltage*tds_calib+tds_calib2)
                 list_ph.append(chan2.voltage*ph_calib+ph_calib2)
                 list_turbidity.append(chan3.voltage*turbidity_calib+turbidity_calib2)
-                #print(len(list[0]))
+                print(len(list[0])," ",end=" ")
 
                 if len(list[0]) > 9:
-                    
+                    print(" ")
                     for z in range(4):
                         mean = statistics.mean(list[z])
                         #print(mean)
@@ -231,6 +227,7 @@ class MM:
                 #Ausgeben des Fehlers
                 x=1 #
                 print("ValueError")
+                list=[],[],[],[] 
     
     
     
@@ -267,12 +264,22 @@ app = FastAPI(
     title="Sensor2Mavlink",
     description="API to send Sensors to Mavlink",
 )
-
+GPIO.setup(16, GPIO.OUT)
+GPIO.setup(20, GPIO.OUT)
+GPIO.setup(14, GPIO.OUT)
+GPIO.output(16, True)
+GPIO.output(20, True)
+GPIO.output(14, False)
 test=MM()
 #test.getSensorsService()
 print("written")
-p = Process(target=test.getSensorsService, args=())
-p.start()
+
+thread_Sensors = threading.Thread(target=test.getSensors, args=(), daemon=True)
+thread_Sensors.start()
+print("Thread strated")
+
+#p = Process(target=test.getSensorsService, args=())
+#p.start()
 #p.join()
 #start_new_thread(test.getSensorsService,())
 #s.deamon = True
@@ -462,7 +469,21 @@ async def load_o2() -> Any:
             data = f.read()
     logger.info(f"Load O2: {data}")
     return data
-    
+
+@app.get("/load_Boje_time", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def load_Boje_time() -> Any:
+    data=""
+    return data
+
+@app.get("/load_Boot_time", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def load_Boot_time() -> Any:
+    x=datetime.datetime.now().strftime("%H:%M  on  %d.%m.%Y")
+    return str(x)
+
+
+
 @app.get("/load_turbidity", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def load_turbidity() -> Any:
@@ -489,12 +510,7 @@ async def load_data() -> Any:
     return data
 
 
-@app.post("/save_calib_turbidity", status_code=status.HTTP_200_OK)
-@version(1, 0)
-async def save_turbidity_calib_file(data: TextData) -> Any:
-    with open(turbidity_calib_file, "w") as f:
-        logger.info(f"Safe TurCal {data}!")
-        f.write(data.data)
+
 
 @app.post("/save_calib_tds", status_code=status.HTTP_200_OK)
 @version(1, 0)
@@ -546,25 +562,58 @@ async def save_o2_calib_file2(data: TextData) -> Any:
     with open(o2_calib_file2, "w") as f:
         f.write(data.data)
 
+@app.post("/setChamber", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def setChamber(chamber: TextData) -> Any:
+    print("Entnehme Probe aus der Kammer ",chamber.data)
+    if int(chamber.data) == 1:
+        GPIO.output(16, False)
+        time.sleep(3)
+        GPIO.output(16, True)
+    if int(chamber.data) == 2:
+        GPIO.output(20, False)
+        GPIO.output(16, False)
+        time.sleep(3)
+        GPIO.output(20, True)
+        GPIO.output(16, True)
+    return "ok"
+
+@app.post("/setTime", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def setTime() -> Any:
+    print("Zeit synchronisieren")
+    return "ok"
 
 
+@app.post("/setGoPro", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def setGoPro(chamber: TextData) -> Any:
+    print("Entnehme Probe aus der Kammer ",chamber.data)
+    if int(chamber.data) == 1:
+        GPIO.output(14, True)
+    if int(chamber.data) == 0:
+        GPIO.output(14, False)
+    return "ok"
+
+@app.post("/save_calib_turbidity", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def save_turbidity_calib_file(data: TextData) -> Any:
+    with open(turbidity_calib_file, "w") as f:
+        logger.info(f"Safe TurCal {data}!")
+        f.write(data.data)
 
 
-
-
+#@app.post("/setServo", status_code=status.HTTP_200_OK)
+#@version(1, 0)
+#async def set_servo(data: TextData) -> Any:
+#    print(data)  
     
-    
+
 
 @app.post("/setServo", status_code=status.HTTP_200_OK)
 @version(1, 0)
-async def set_servo(pin: int, pwm: float) -> Any:
-    if pin < 0 or pwm < -1 or pwm > 1:
-        raise HTTPException("Invalid values")
-    if pin not in servos:
-        servos[pin] = Servo(pin)
-    servos[pin].value = pwm
-    
-    test.send_statustext(str("FEHLER IM SENSOR"))
+async def set_servo(pin: int) -> Any:
+    print("PIN:",pin)
     return "ok"
 
 app = VersionedFastAPI(app, version="1.0.0", prefix_format="/v{major}.{minor}", enable_latest=True)
