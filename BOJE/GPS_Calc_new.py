@@ -6,12 +6,258 @@ import threading
 import os, sys
 import socket, serial
 import math
+from htu21 import HTU21
 import pynmea2
 from csv_logger import CsvLogger
 import logging
 print("Starting GNSS Correction Service\nCalculating GDAL Geometry...")
 from osgeo.ogr import Geometry, wkbPoint
 from osgeo.osr import SpatialReference, SpatialReference, CoordinateTransformation
+
+import uvicorn
+from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, HTTPException, status
+from fastapi.responses import HTMLResponse, FileResponse
+from fastapi_versioning import VersionedFastAPI, version
+from pydantic import BaseModel
+import os
+import threading
+import datetime
+import os
+import time
+from typing import Any, Dict, Optional
+
+
+# Zeuch für den Webserver
+
+FIXLAT=51.07205984
+FIXLON=13.59835664
+RTKLAT=1
+RTKLON=1
+RTKX=1
+RTKY=1
+
+depth=1
+compass=0
+distance=0
+correction=1
+
+
+UTMX=1
+UTMY=1
+GPSLat=1
+GPSLon=1
+cGPSLat=1
+cGPSLon=1
+Accuracy=1
+
+htu = HTU21()
+
+
+
+enable_correction=True
+enable_RTK=False
+
+class TextData(BaseModel):
+    data: str
+
+app = FastAPI(
+    title="GPS_Calc",
+    description="GPS_Calc",
+)
+
+
+
+
+# GPS Data
+
+
+@app.get("/GPSLat", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return GPSLat
+
+@app.get("/GPSLon", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return GPSLon
+
+@app.get("/cGPSPosLat", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return cGPSLat
+
+@app.get("/cGPSPosLon", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return cGPSLon
+
+@app.get("/UTMX", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return UTMX
+
+@app.get("/UTMY", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return UTMY
+
+
+
+
+
+# correction Data
+
+
+@app.get("/Depth", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return depth
+
+@app.get("/Lenght", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return distance
+
+@app.get("/Correction", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return correction
+
+@app.get("/Direction", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return compass
+
+@app.get("/Accuracy", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return Accuracy
+
+
+
+
+
+#DGPS Data
+
+
+@app.get("/DGPSfixLat", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+   print("data")
+   return FIXLAT
+
+@app.get("/DGPSfixLon", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return FIXLON
+
+@app.get("/DGPSposLat", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return RTKLAT
+
+@app.get("/DGPSposLon", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return RTKLON
+
+@app.get("/DGPScorrX", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return RTKX
+
+@app.get("/DGPScorrY", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return RTKY
+
+
+@app.get("/GetTime", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+   x=datetime.datetime.now().strftime("%H:%M  on  %d.%m.%Y")
+   return str(x)
+
+
+@app.get("/GetTemp", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+   x=round(htu.read_temperature(),1)
+   print("T=",x)
+   return str(x)
+
+@app.get("/GetHum", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+   x=round(htu.read_humidity(),1)
+   print("H=",x)
+   return str(x)
+
+
+@app.post("/setDGPSLat", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def setData(setDGPSLat: TextData) -> Any:
+    FIXLAT=setDGPSLat.data
+    print("FIXLAT=",FIXLAT)
+    return "ok"
+
+@app.post("/setDGPSLon", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def setData(setDGPSLon: TextData) -> Any:
+    FIXLON=str(setDGPSLon.data)
+    print("FIXLON=",FIXLON)
+    return "ok"
+
+
+@app.post("/enableDGPS", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def set(setDGPS: TextData) -> Any:
+   if int(setDGPS.data) == 0:
+      enable_RTK = False
+      print("DGPS aus")
+   else:
+      enable_RTK = True
+      print("DGPS an")
+   return "ok"
+
+
+
+
+@app.post("/enableCalc", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def enableCalc(setDGPS: TextData) -> Any:
+   if int(setDGPS.data) == 0:
+      enable_correction=False
+      print("corr aus")
+   else:
+      enable_correction=True
+      print("corr an")
+   return "ok"
+
+
+
+
+    
+@app.post("/setTime", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def setTime() -> Any:
+    print("Zeit synchronisieren")
+    os.system("./timesync.sh")
+    return "ok"
+
+app = VersionedFastAPI(app, version="1.0.0", prefix_format="/v{major}.{minor}", enable_latest=True)
+
+app.mount("/", StaticFiles(directory="static",html = True), name="static")
+
+@app.get("/", response_class=FileResponse)
+async def root() -> Any:
+        return "index.html"
+
+
+
+# Bis hier Webserver
+
 
 correction_possible = True
 
@@ -26,8 +272,7 @@ transformback = CoordinateTransformation(target, source)
 point = Geometry(wkbPoint)
 RTKpoint = Geometry(wkbPoint)
 RTK = False
-RTKLAT=0
-RTKLON=0
+
 
 
 #ENCODER CONSTANTS
@@ -52,8 +297,7 @@ result = []
 
 alt_url="http://192.168.2.2:6040/mavlink/vehicles/1/components/1/messages/AHRS2/message/altitude"
 compass_url="http://192.168.2.2:6040/mavlink/vehicles/1/components/1/messages/VFR_HUD/message/heading"
-depth = 0
-compass = 0
+
 
 #SERIAL GPS
 ser = serial.Serial('/dev/serial0', baudrate=115200, timeout = 5)
@@ -133,11 +377,11 @@ def readSerialNMEA(ser):
          if (line != None and (line.startswith('$GNGGA') or line.startswith('$GPGGA'))):    
             return line
       except serial.SerialException as e:
-         #There is no new data from serial port
-         correction_possible = False
+         print("There is no new data from serial port")
+         #correction_possible = False
          return None
       except TypeError as e:
-         #Disconnect of USB->UART occured
+         print("Disconnect of USB->UART occured")
          correction_possible = False
          return None
 
@@ -149,8 +393,12 @@ def send_RTK():
         
 def rec_RTK():
    global RTK
-   global RTKLAT
    global RTKLON
+   global FIXLON
+   global RTKLAT
+   global FIXLAT
+   global RTKX
+   global RTKY
 
    UDP_IP = "192.168.2.3"
    UDP_PORT = 28000
@@ -168,12 +416,11 @@ def rec_RTK():
          continue
       
       # Base Station Koordinaten
-      RTKLAT=d_nmea_obj.latitude
-      RTKLON=d_nmea_obj.longitude
+      #RTKLAT=d_nmea_obj.latitude
+      #RTKLON=d_nmea_obj.longitude
 
       #Fixpunkt Koordinaten TODO: Als Parameter einstellbar machen
-      FIXLAT=51.07205984
-      FIXLON=13.59835664
+
 
       #Prüfen ob die Eingestellte RTK Koordinate richtig sein kann
       if abs(RTKLAT-FIXLAT) < 100:
@@ -201,6 +448,12 @@ def getAccuracyEquip(distance, depth):
    else:
       return math.sqrt((distance * 0.02)*(distance * 0.02) + 2 * 2)
 
+def sendNMEAtoROV(nmea):
+   global BOOT_IP
+   global BOOT_PORT
+
+   print("Sending to ROV "+BOOT_IP+":"+str(BOOT_PORT) + "...")
+   sock_boot.sendto(bytes(str(nmea)+"\n",encoding='utf8'), (BOOT_IP, BOOT_PORT))
 
 #___________________________MAIN_______________________________        
 
@@ -216,98 +469,156 @@ thread_encoder = threading.Thread(target=update_encoder_values, args=(), daemon=
 thread_encoder.start()
 
 #start DGPS thread
-thread_encoder = threading.Thread(target=rec_RTK, args=(), daemon=True)
-thread_encoder.start()
+if RTK:
+   print("DGPS ACTIVE")
+   thread_encoder = threading.Thread(target=rec_RTK, args=(), daemon=True)
+   thread_encoder.start()
 
 print("Waiting for GGA-Messages...")
 counter = 0
 
-
-while True:
-   correction_possible = True
-   ####GET GGA FROM SERIAL
-   
-   #TODO: Manchmal kommt hier ein None durch, wieso?
-   nmea_str = readSerialNMEA(ser)
-   if correction_possible:
-      print(str(counter)+"\n----------------------------------------")
-      print(nmea_str)
-
-      try:
-         nmea_obj = pynmea2.parse(nmea_str)
-      except pynmea2.ParseError as e:
-         print("Parse error: {0}".format(e))
-         continue
-         
-      ####GET GPS FROM RTK 
-      if RTK:
-         point.AddPoint(point.GetX()+RTKX, point.GetY()+RTKY)
-         Accuracy = getAccuracyEquip(distance, depth) + 0,35
-      else:
-         Accuracy = getAccuracyEquip(distance, depth) + 3
-      print("Accuracy:" + str(Accuracy) + " m")
-   
-
-      ####CORRECT GPS WITH RTK
-      RTKX= 0	#--> RTK Offset X (DUMMY)
-      RTKY= 0	#--> RTK Offset Y (DUMMY)
-
-
-      ####Calculate Offset with Pythagoras | distance² = depth² + offset²
-      correction = math.sqrt(math.pow(distance,2) - math.pow(depth,2))
-      print("Correction-offset:" + str(correction) + " m")
-
-      ####CONVERT TO UTM
-      #offset meters to UTM
-      UTMY=math.sin(compass)*correction
-      UTMX=math.cos(compass)*correction
-
-      #--> Coordinates to gdal point
-      point.AddPoint(nmea_obj.latitude, nmea_obj.longitude)
-
-      #--> Transform to UTM
-      point.Transform(transform)
-
-      #--> Actual Correction
-      point.AddPoint(point.GetX()+UTMX, point.GetY()+UTMY)
-
-      #--> Transform back to WGS84
-      point.Transform(transformback)
+def main():
+   global UTMX
+   global counter
+   global UTMY
+   global correction
+   global distance
+   global compass
+   global depth
+   global GPSLat
+   global GPSLon
+   global cGPSLat
+   global cGPSLon
+   global Accuracy
+   while True:
+      #correction_possible = True
+      ####GET GGA FROM SERIAL
       
-      try:
-         ####GENERATE GGA
-         new_nmea = pynmea2.GGA('GN', 'GGA', (nmea_obj.timestamp.strftime("%H%M%S.000"), 
-                                                      decTodms(point.GetX()), 
-                                                      str(nmea_obj.lat_dir), 
-                                                      decTodms(point.GetY()),
-                                                      str(nmea_obj.lon_dir), 
-                                                      str(2),                         # Fix Type 2 = D-GPS
-                                                      str(nmea_obj.num_sats), 
-                                                      str(nmea_obj.horizontal_dil), 
-                                                      str(nmea_obj.altitude), 
-                                                      str(nmea_obj.altitude_units), 
-                                                      str(nmea_obj.geo_sep), 
-                                                      str(nmea_obj.geo_sep_units), 
-                                                      str(nmea_obj.age_gps_data),     # Age of correction data?
-                                                      str(nmea_obj.ref_station_id)))
-      except:
-         print("Error while generating GGA")
-         continue
+      #TODO: Manchmal kommt hier ein None durch, wieso?
+      nmea_str = readSerialNMEA(ser)
+      if correction_possible:
+         print(str(counter)+"\n----------------------------------------")
+         print(nmea_str)
 
-      print("\nNew GGA:\n"+str(new_nmea))
+         try:
+            nmea_obj = pynmea2.parse(nmea_str)
+         except pynmea2.ParseError as e:
+            print("Parse error: {0}".format(e))
+            continue
+            
+         ####GET GPS FROM RTK 
 
-      ####LOG EVERYTHING TO CSV
-      csvlogger.info([nmea_str.rstrip(), str(new_nmea), 0, distance, compass, depth, Accuracy])
-   
-      ####SEND TO ROV
-      print("Sending to ROV "+BOOT_IP+":"+str(BOOT_PORT) + "...")
-      sock_boot.sendto(bytes(str(new_nmea)+"\n",encoding='utf8'), (BOOT_IP, BOOT_PORT))
-      counter+=1
-      print("----------------------------------------")
-   else:
-      print("#Correction skipped... something missing here...#")
+      
+
+         ####CORRECT GPS WITH RTK
+         #RTKX= 0	#--> RTK Offset X (DUMMY)
+         #RTKY= 0	#--> RTK Offset Y (DUMMY)
+
+         distance = 2
+         ####Calculate Offset with Pythagoras | distance² = depth² + offset²
+         if depth > distance:
+            print("skipping bc depth bigger distance...")
+            print("distance=" + str(distance) + "\ndepth=" + str(depth))
+            csvlogger.info([nmea_str.rstrip(), "dist-depth-error", 0, distance, compass, depth, Accuracy])
+            sendNMEAtoROV(nmea_obj)
+            continue
+
+         correction = math.sqrt(math.pow(distance,2) - math.pow(depth,2))
+         print("Correction-offset:" + str(correction) + " m")
 
 
+
+
+         ####CONVERT TO UTM
+         try:
+            #offset meters to UTM
+            UTMY=math.sin(compass)*correction
+            UTMX=math.cos(compass)*correction
+
+            GPSLat=nmea_obj.latitude
+            GPSLon=nmea_obj.longitude
+
+            #--> Coordinates to gdal point
+            point.AddPoint(nmea_obj.latitude, nmea_obj.longitude)
+            if enable_RTK:
+               point.AddPoint(point.GetX()+RTKX, point.GetY()+RTKY)
+               Accuracy = getAccuracyEquip(distance, depth) + 0,35
+               print("berechne DGPS")
+            else:
+               Accuracy = getAccuracyEquip(distance, depth) + 3
+            print("Accuracy:" + str(Accuracy) + " m")
+
+            #--> Transform to UTM
+            point.Transform(transform)
+
+            #--> Actual Correction
+            if enable_correction:
+               point.AddPoint(point.GetX()+UTMX, point.GetY()+UTMY)
+               print("berechne Korrektur")
+            else: print("SKIP CORRECTION")
+
+            cGPSLat=point.GetX()
+            cGPSLon=point.GetY()
+
+            if enable_RTK:
+               point.AddPoint(point.GetX()+RTKX, point.GetY()+RTKY)
+            
+            else: print("SKIP DGPS")
+            
+
+            #--> Transform back to WGS84
+            point.Transform(transformback)
+         except:
+            print("GDAL ERROR...skip")
+            continue 
+         try:
+            ####GENERATE GGA
+            new_nmea = pynmea2.GGA('GN', 'GGA', (nmea_obj.timestamp.strftime("%H%M%S.000"), 
+                                                         decTodms(point.GetX()), 
+                                                         str(nmea_obj.lat_dir), 
+                                                         decTodms(point.GetY()),
+                                                         str(nmea_obj.lon_dir), 
+                                                         str(2),                         # Fix Type 2 = D-GPS
+                                                         str(nmea_obj.num_sats), 
+                                                         str(nmea_obj.horizontal_dil), 
+                                                         str(0), 
+                                                         str(nmea_obj.altitude_units), 
+                                                         str(nmea_obj.geo_sep), 
+                                                         str(nmea_obj.geo_sep_units), 
+                                                         str(nmea_obj.age_gps_data),     # Age of correction data?
+                                                         str(nmea_obj.ref_station_id)))
+         except:
+            print("Error while generating GGA")
+            continue
+
+         print("\nNew GGA:\n"+str(new_nmea))
+
+         ####LOG EVERYTHING TO CSV
+         csvlogger.info([nmea_str.rstrip(), str(new_nmea), 0, distance, compass, depth, Accuracy])
+      
+         ####SEND TO ROV
+         sendNMEAtoROV(new_nmea)
+         counter+=1
+         print("----------------------------------------")
+      else:
+         print("#Correction skipped... something missing here...#")
+         sendNMEAtoROV(nmea_str)
+
+
+def loop():
+    while True:
+        try:
+            main()
+        except Exception as e:
+            print("\nMain Loop Failed: \n" + str(e) + "\n")
+
+thread_Loop = threading.Thread(target=loop, args=(), daemon=True)
+thread_Loop.start()
+
+
+
+
+uvicorn.run(app, host="0.0.0.0", port=81, log_config=None)
 
 #         os.system("clear")
 #      #Print boot data
