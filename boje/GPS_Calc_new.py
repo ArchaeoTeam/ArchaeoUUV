@@ -618,7 +618,7 @@ thread_Loop.start()
 
 
 
-uvicorn.run(app, host="0.0.0.0", port=80, log_config=None)
+uvicorn.run(app, host="0.0.0.0", port=81, log_config=None)
 
 #         os.system("clear")
 #      #Print boot data

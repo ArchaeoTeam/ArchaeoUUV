@@ -100,18 +100,18 @@
 
 
                     <v-card class="mx-auto" max-width="300" max-height="150" outlined>
-                        <b>DGPS Pos Lat</b>
+                        <b>DGPS Pos</b>
                         <v-text-field v-model="DGPSposLat">
                         </v-text-field>
                     </v-card>
                     <v-card class="mx-auto" max-width="300" max-height="150" outlined>
-                        <b>DGPS Pos Lon</b>
+                        <b>DGPS Pos</b>
                         <v-text-field v-model="DGPSposLon">
                         </v-text-field>
                     </v-card>
                     
                     <v-card class="mx-auto" max-width="300" max-height="150" outlined>
-                        <b>DGPS Fix Lat</b>
+                        <b>DGPS Fix</b>
                         <v-text-field v-model="DGPSfixLat">
                         </v-text-field>
                         <v-btn outlined rounded text @click="setDPGS()">
@@ -119,17 +119,17 @@
                          </v-btn>
                     </v-card>
                     <v-card class="mx-auto" max-width="300" max-height="150" outlined>
-                        <b>DGPS Fix Lon</b>
+                        <b>DGPS Fix</b>
                         <v-text-field v-model="DGPSfixLon">
                         </v-text-field>
                     </v-card>
                     <v-card class="mx-auto" max-width="300" max-height="150" outlined>
-                        <b>DGPS corr Lat</b>
+                        <b>DGPS corr</b>
                         <v-text-field v-model="DGPScorrX">
                         </v-text-field>
                     </v-card>
                     <v-card class="mx-auto" max-width="300" max-height="150" outlined>
-                        <b>DGPS corr Lon</b>
+                        <b>DGPS corr</b>
                         <v-text-field v-model="DGPScorrY">
                         </v-text-field>
                     </v-card>
@@ -149,10 +149,10 @@
                         <v-btn outlined rounded text @click="setTime()">   Send Time to UUV  </v-btn>
                     </v-card>
                     <v-card class="mx-auto" max-width="300" outlined>
-                        <v-btn color="red" outlined rounded text @click="restart()">   Restart Script    </v-btn>
+                        <v-btn color="red" outlined rounded text @click="setTime()">   Restart Script    </v-btn>
                         <br><br>
-                        <v-btn color="red" id="Bu_DGPS" flat bg-error text @click="enableDGPS(0)">   D DGPS  </v-btn><v-btn color="green" outlined rounded text @click="enableDGPS(1)">   E DGPS  </v-btn><br><br>
-                        <v-btn color="red" id="Bu_Calc" outlined bg-error rounded text @click="enableCalc(0)">   D Calc  </v-btn><v-btn color="green" outlined rounded text @click="enableCalc(1)">   E Calc  </v-btn>
+                        <v-btn color="red" outlined rounded text @click="enableDGPS(0)">   D DGPS  </v-btn><v-btn color="green" outlined rounded text @click="enableDGPS(1)">   E DGPS  </v-btn><br><br>
+                        <v-btn color="red" outlined rounded text @click="enableCalc(0)">   D Calc  </v-btn><v-btn color="green" outlined rounded text @click="enableCalc(1)">   E Calc  </v-btn>
                     </v-card>
 
                     <v-card class="mx-auto" max-width="150" max-height="250" outlined>
@@ -204,23 +204,11 @@
 
                 hum:"",
                 temp:"",
-                UTMX:"",
-                UTMY:"",
-                timeBoje:"",
-                corr:True,
-                DGPS:True,
-
-
-
             }
         }, 
         methods: {
 
-
-            async reloadDataFromBackend()
-            {
-
-
+			async loadTextFromBackend() {
 
 
                 
@@ -267,7 +255,12 @@
 
 
 
-
+                axios.get("/v1.0/DGPSfixLat").then(response => {
+                    this.DGPSfixLat = response.data;
+                })
+                axios.get("/v1.0/DGPSfixLon").then(response => {
+                    this.DGPSfixLon = response.data;
+                })
                 axios.get("/v1.0/DGPSposLat").then(response => {
                     this.DGPSposLat = response.data;
                 })
@@ -294,29 +287,6 @@
                     this.hum = response.data;
                 })
 
-                axios.get("/v1.0/GetDGPS").then(response => {
-                    this.DGPS = response.data;
-                })
-
-                axios.get("/v1.0/Getcorr").then(response => {
-                    this.corr = response.data;
-                })
-
-                this.active = !this.active;
-
-            },
-
-        
-			async loadTextFromBackend() {
-                axios.get("/v1.0/DGPSfixLat").then(response => {
-                    this.DGPSfixLat = response.data;
-                })
-                axios.get("/v1.0/DGPSfixLon").then(response => {
-                    this.DGPSfixLon = response.data;
-                })
-
-                this.reloadDataFromBackend()
-
             },
             async saveTextToBackend() {
                 axios.post('/v1.0/save_calib_turbidity', {
@@ -342,32 +312,18 @@
                 })
             },
 
-            async timer() {
-            
-                this.interval = setInterval(() => this.reloadDataFromBackend(), 2000);
-                this.document.getElementById("Bu_DGPS").style.backgroundColor= '#F00FFF';
-                
-            },
+
             
 
             async setTime() {
                 axios.post('/v1.0/setTime', {
                     
                 })
-            },
-
-            async restart() {
-                axios.post('/v1.0/restart', {
-                    
-                })
             }
         },
-
         mounted() {
             this.loadTextFromBackend()
-            this.timer()
-        },
-
+        }
     })
 
 
