@@ -1,2 +1,0 @@
-date;NMEA_rover;NMEA_corrected;NMEA_base;tether_length;compass;depth;accuracy
-2023-02-18 07:21:58.694;$GNGGA,062158.511,,,,,0,00,,,M,,M,,*6B;dist-depth-error;0;-0.007948438775091434;62.0;0.0;3.150000084236882
