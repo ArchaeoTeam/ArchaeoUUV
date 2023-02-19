@@ -1,0 +1,325 @@
+<html>
+
+<head>
+    <title>Vue + Vuetify + backend Example Extension</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="/css/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+</head>
+
+<style>
+    .v-card {
+        padding: 20px;
+    }
+
+    h1 {
+        margin-bottom: 30px;
+        text-align: center;
+    }
+</style>
+
+<div id="app">
+    <v-app>
+        <v-main>
+            <v-container>
+                <h1>Sensor 2 Mavlink</h1>
+                <!-- This card is from  https://vuetifyjs.com/en/components/cards/#outlined -->
+                <v-row>
+					<v-card class="mx-auto" max-width="250" max-height="150" outlined>
+                        <b>PH: <v-text-field max-width="50" v-model="ph_value">  </v-text-field> </b>
+                    </v-card>
+					<v-card class="mx-auto" max-width="250" max-height="150" outlined>
+                        <b>TDS:</b>
+                        <v-text-field v-model="tds_value">
+                        </v-text-field>
+                    </v-card>
+					<v-card class="mx-auto" max-width="250" max-height="150" outlined>
+                        <b>O2:</b>
+                        <v-text-field v-model="o2_value">
+                        </v-text-field>
+                    </v-card>
+					<v-card class="mx-auto" max-width="250" max-height="150" outlined>
+                        <b>Turbidity:</b>
+                        <v-text-field v-model="turbidity_value">
+                        </v-text-field>
+                    </v-card>
+                </v-row>
+                <v-row>
+                    <br>
+                </v-row>
+                <h1>Calibration</h1>
+				<v-row>
+				<br>
+				</v-row>
+				<v-row>
+
+					
+					<v-card class="mx-auto" max-width="140" max-height="250" outlined>
+                        <b>* PH-Calib:</b>
+                        <v-text-field v-model="ph_calib_value">
+                        </v-text-field>
+                        <v-btn outlined rounded text @click="saveTextToBackend()">
+                                SET
+                        </v-btn>
+                    </v-card>
+					<v-card class="mx-auto" max-width="140" max-height="250" outlined>
+                        <b>+ PH-Calib:</b>
+                        <v-text-field v-model="ph_calib_value2">
+                        </v-text-field>
+                        <v-btn outlined rounded text @click="saveTextToBackend()">
+                                SET
+                        </v-btn>
+                    </v-card>
+					<v-card class="mx-auto" max-width="140" max-height="250" outlined>
+                        <b>* TDS-Calib:</b>
+                        <v-text-field v-model="tds_calib_value">
+                        </v-text-field>
+                        <v-btn outlined rounded text @click="saveTextToBackend()">
+                                SET
+                        </v-btn>
+                    </v-card>
+					<v-card class="mx-auto" max-width="140" max-height="250" outlined>
+                        <b>+ TDS-Calib:</b>
+                        <v-text-field v-model="tds_calib_value2">
+                        </v-text-field>
+                        <v-btn outlined rounded text @click="saveTextToBackend()">
+                                SET
+                        </v-btn>
+                    </v-card>
+					<v-card class="mx-auto" max-width="140" max-height="250" outlined>
+                        <b>* O2-Calib:</b>
+                        <v-text-field v-model="o2_calib_value">
+                        </v-text-field>
+                        <v-btn outlined rounded text @click="saveTextToBackend()">
+                                SET
+                        </v-btn>
+                    </v-card>
+					<v-card class="mx-auto" max-width="140" max-height="250" outlined>
+                        <b>+ O2-Calib:</b>
+                        <v-text-field v-model="o2_calib_value2">
+                        </v-text-field>
+                        <v-btn outlined rounded text @click="saveTextToBackend()">
+                                SET
+                        </v-btn>
+                    </v-card>
+					<v-card class="mx-auto" max-width="140" max-height="250" outlined>
+                        <b>* Tu-Calib:</b>
+                        <v-text-field v-model="turbidity_calib_value">
+                        </v-text-field>
+                        <v-btn outlined rounded text @click="saveTextToBackend()">
+                                SET
+                        </v-btn>
+                    </v-card>
+					<v-card class="mx-auto" max-width="140" max-height="250" outlined>
+                        <b>+ Tu-Calib:</b>
+                        <v-text-field v-model="turbidity_calib_value2">
+                        </v-text-field>
+                        <v-btn outlined rounded text @click="saveTextToBackend()">
+                                SET
+                        </v-btn>
+                    </v-card>
+                </v-row>
+                <v-row>
+                    <br>
+                </v-row>
+                <h1>Sample Controller</h1>
+                <v-row>
+                    <br>
+                </v-row>
+                <v-row>
+                    <v-card class="mx-auto" max-width="300" max-height="250" outlined>
+                        <b>Probe 1 nehmen:</b>
+                        </v-text-field>
+                        <v-btn color="green" id="chamber1" outlined rounded text @click="setChamber(1)">
+                                Start
+                        </v-btn>
+                    </v-card>
+                    <v-card class="mx-auto" max-width="300" max-height="250" outlined>
+                        <b>Probe 2 nehmen:</b>
+                        </v-text-field>
+                        <v-btn color="green" id="chamber2" outlined rounded text @click="setChamber(2)">
+                                Start
+                        </v-btn>
+                    </v-card>
+
+
+                    <v-card class="mx-auto" max-width="300" max-height="250" outlined>
+                        <b>GoPro:</b>
+                        </v-text-field>
+                        <v-btn color="green" id="GoPro1" outlined rounded text @click="setGoPro(1)">
+                                Anschalten
+                        </v-btn>
+                    </v-card>
+                    <v-card class="mx-auto" max-width="300" max-height="250" outlined>
+                        <b>GoPro:</b>
+                        </v-text-field>
+                        <v-btn color="red" id="GoPro0" outlined rounded text @click="setGoPro(0)">
+                                Ausschalten
+                        </v-btn>
+                    </v-card>
+
+                </v-row>
+                <v-row>
+                    <br>
+                </v-row>
+                <h1>Systemzeit</h1>
+                <v-row>
+                    <br>
+                </v-row>
+                <v-row>
+                    
+                    <v-card class="mx-auto" max-width="300" max-height="250" outlined>
+                        <b>Zeit Boot</b>
+                        <v-text-field v-model="timeBoot"></v-text-field>
+                        <v-btn color="green" id="chamber1" outlined rounded text @click="setTime()">
+                                Synchronisieren
+                        </v-btn>
+                    </v-card>
+                    <v-card class="mx-auto" max-width="300" max-height="250" outlined>
+                        <b>Zeit Boje</b>
+                        <v-text-field v-model="timeBoje"></v-text-field>
+                    </v-card>
+
+                </v-row>
+            </v-container>
+        </v-main>
+    </v-app>
+</div>
+
+<script src="/js/vue.js"></script>
+<script src="/js/vuetify.js"></script>
+<script src="/js/axios.min.js"></script>
+
+<script>
+    Vue.config.devtools = true;
+    new Vue({
+        el: '#app',
+        vuetify: new Vuetify(),
+        data() {
+            return {
+				text_data: "",
+				turbidity_value: "2",
+				o2_value: "2",
+				tds_value: "2",
+				ph_value: "2",
+				turbidity_calib_value: "1.0",
+				o2_calib_value: "1.0",
+				tds_calib_value: "1.0",
+				ph_calib_value: "1.0",
+				turbidity_calib_value2: "0.0",
+				o2_calib_value2: "0.0",
+				tds_calib_value2: "0.0",
+				ph_calib_value2: "0.0",
+                timeBoje: "",
+                timeBoot: "",
+            }
+        }, 
+        methods: {
+
+
+            async setServo(value) {
+                axios.post('/v1.0/setServo', null, {
+                    pin: 123,
+                })
+            },
+
+
+
+			async loadTextFromBackend() {
+                axios.get("/v1.0/load_Boje_time").then(response => {
+                    this.timeBoje = response.data;
+                })
+                axios.get("/v1.0/load_Boot_time").then(response => {
+                    this.timeBoot = response.data;
+                })
+                axios.get("/v1.0/load_turbidity").then(response => {
+                    this.turbidity_value = response.data;
+                })
+				axios.get("/v1.0/load_o2").then(response => {
+                    this.o2_value = response.data;
+                })
+				axios.get("/v1.0/load_tds").then(response => {
+                    this.tds_value = response.data;
+                })
+				axios.get("/v1.0/load_ph").then(response => {
+                    this.ph_value = response.data;
+                })
+				axios.get("/v1.0/load_calib_turbidity").then(response => {
+                    this.turbidity_calib_value = response.data;
+                })
+				axios.get("/v1.0/load_calib_o2").then(response => {
+                    this.o2_calib_value = response.data;
+                })
+				axios.get("/v1.0/load_calib_tds").then(response => {
+                    this.tds_calib_value = response.data;
+                })
+				axios.get("/v1.0/load_calib_ph").then(response => {
+                    this.ph_calib_value = response.data;
+                })
+				axios.get("/v1.0/load_calib_turbidity2").then(response => {
+                    this.turbidity_calib_value2 = response.data;
+                })
+				axios.get("/v1.0/load_calib_o22").then(response => {
+                    this.o2_calib_value2 = response.data;
+                })
+				axios.get("/v1.0/load_calib_tds2").then(response => {
+                    this.tds_calib_value2 = response.data;
+                })
+				axios.get("/v1.0/load_calib_ph2").then(response => {
+                    this.ph_calib_value2 = response.data;
+                })
+            },
+            async setChamber(value) {
+                axios.post('/v1.0/setChamber', {
+                    data: value,
+                })
+            },
+            async setGoPro(value) {
+                axios.post('/v1.0/setGoPro', {
+                    data: value,
+                })
+            },
+            async setTime() {
+                axios.post('/v1.0/setTime', {
+                    
+                })
+            },
+             
+
+            async saveTextToBackend() {
+                axios.post('/v1.0/save_calib_turbidity', {
+                    data: this.turbidity_calib_value,
+                })
+                axios.post('/v1.0/save_calib_o2', {
+                    data: this.o2_calib_value,
+                })
+                axios.post('/v1.0/save_calib_tds', {
+                    data: this.tds_calib_value,
+                })
+                axios.post('/v1.0/save_calib_ph', {
+                    data: this.ph_calib_value,
+                })
+				axios.post('/v1.0/save_calib_turbidity2', {
+                    data: this.turbidity_calib_value2,
+                })
+                axios.post('/v1.0/save_calib_o22', {
+                    data: this.o2_calib_value2,
+                })
+                axios.post('/v1.0/save_calib_tds2', {
+                    data: this.tds_calib_value2,
+                })
+                axios.post('/v1.0/save_calib_ph2', {
+                    data: this.ph_calib_value2,
+                })
+            }
+        },
+        mounted() {
+            this.loadTextFromBackend()
+        }
+    })
+
+
+</script>
+
+</html>
