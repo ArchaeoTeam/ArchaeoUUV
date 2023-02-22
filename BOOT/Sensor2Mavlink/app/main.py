@@ -479,7 +479,7 @@ async def load_Boje_time() -> Any:
 @app.get("/load_Boot_time", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def load_Boot_time() -> Any:
-    x=datetime.datetime.now().strftime("%H:%M  on  %d.%m.%Y")
+    x=datetime.datetime.now().strftime("%H:%M:%S  on  %d.%m.%Y")
     return str(x)
 
 
