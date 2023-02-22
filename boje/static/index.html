@@ -100,18 +100,18 @@
 
 
                     <v-card class="mx-auto" max-width="300" max-height="150" outlined>
-                        <b>DGPS Pos</b>
+                        <b>DGPS Pos Lat</b>
                         <v-text-field v-model="DGPSposLat">
                         </v-text-field>
                     </v-card>
                     <v-card class="mx-auto" max-width="300" max-height="150" outlined>
-                        <b>DGPS Pos</b>
+                        <b>DGPS Pos Lon</b>
                         <v-text-field v-model="DGPSposLon">
                         </v-text-field>
                     </v-card>
                     
                     <v-card class="mx-auto" max-width="300" max-height="150" outlined>
-                        <b>DGPS Fix</b>
+                        <b>DGPS Fix Lat</b>
                         <v-text-field v-model="DGPSfixLat">
                         </v-text-field>
                         <v-btn outlined rounded text @click="setDPGS()">
@@ -119,17 +119,17 @@
                          </v-btn>
                     </v-card>
                     <v-card class="mx-auto" max-width="300" max-height="150" outlined>
-                        <b>DGPS Fix</b>
+                        <b>DGPS Fix Lon</b>
                         <v-text-field v-model="DGPSfixLon">
                         </v-text-field>
                     </v-card>
                     <v-card class="mx-auto" max-width="300" max-height="150" outlined>
-                        <b>DGPS corr</b>
+                        <b>DGPS corr Lat</b>
                         <v-text-field v-model="DGPScorrX">
                         </v-text-field>
                     </v-card>
                     <v-card class="mx-auto" max-width="300" max-height="150" outlined>
-                        <b>DGPS corr</b>
+                        <b>DGPS corr Lon</b>
                         <v-text-field v-model="DGPScorrY">
                         </v-text-field>
                     </v-card>
@@ -149,7 +149,7 @@
                         <v-btn outlined rounded text @click="setTime()">   Send Time to UUV  </v-btn>
                     </v-card>
                     <v-card class="mx-auto" max-width="300" outlined>
-                        <v-btn color="red" outlined rounded text @click="setTime()">   Restart Script    </v-btn>
+                        <v-btn color="red" outlined rounded text @click="restart()">   Restart Script    </v-btn>
                         <br><br>
                         <v-btn color="red" outlined rounded text @click="enableDGPS(0)">   D DGPS  </v-btn><v-btn color="green" outlined rounded text @click="enableDGPS(1)">   E DGPS  </v-btn><br><br>
                         <v-btn color="red" outlined rounded text @click="enableCalc(0)">   D Calc  </v-btn><v-btn color="green" outlined rounded text @click="enableCalc(1)">   E Calc  </v-btn>
@@ -204,11 +204,14 @@
 
                 hum:"",
                 temp:"",
+                UTMX:"",
+ 		        UTMY:"",
+		        timeboje:"",
             }
         }, 
         methods: {
 
-			async loadTextFromBackend() {
+			async reloadTextFromBackend() {
 
 
                 
@@ -255,12 +258,7 @@
 
 
 
-                axios.get("/v1.0/DGPSfixLat").then(response => {
-                    this.DGPSfixLat = response.data;
-                })
-                axios.get("/v1.0/DGPSfixLon").then(response => {
-                    this.DGPSfixLon = response.data;
-                })
+
                 axios.get("/v1.0/DGPSposLat").then(response => {
                     this.DGPSposLat = response.data;
                 })
@@ -288,6 +286,19 @@
                 })
 
             },
+            async loadTextFromBackend() {
+                axios.get("/v1.0/DGPSfixLat").then(response => {
+                    this.DGPSfixLat = response.data;
+                })
+                axios.get("/v1.0/DGPSfixLon").then(response => {
+                    this.DGPSfixLon = response.data;
+                })
+            },
+
+            timer() {
+                 this.interval = setInterval(() => this.reloadTextFromBackend(), 2000);
+            },
+
             async saveTextToBackend() {
                 axios.post('/v1.0/save_calib_turbidity', {
                     data: this.turbidity_calib_value,
@@ -313,7 +324,11 @@
             },
 
 
-            
+            async restart() {
+                axios.post('/v1.0/restart', {
+                    
+                })
+            },            
 
             async setTime() {
                 axios.post('/v1.0/setTime', {
@@ -323,6 +338,7 @@
         },
         mounted() {
             this.loadTextFromBackend()
+            this.timer()
         }
     })
 
