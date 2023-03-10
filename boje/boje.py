@@ -27,13 +27,15 @@ from osgeo.ogr import Geometry, wkbPoint
 from osgeo.osr import SpatialReference, SpatialReference, CoordinateTransformation
 
 # Zeuch für den Webserver
-
-FIXLAT=51.07205984
-FIXLON=13.59835664
+dgps_nmea_obj=None
+FIXLAT=51.0351205
+FIXLON=13.7356563
 RTKLAT=1
 RTKLON=1
 RTKX=1
 RTKY=1
+
+rover_nmea_obj=None
 
 depth=1.5
 compass=0
@@ -45,10 +47,10 @@ PrevUTMX=-1
 PrevUTMY=-1
 UTMX=1
 UTMY=1
-GPSLat=1
-GPSLon=1
-cGPSLat=1
-cGPSLon=1
+BojeLat=1
+BojeLon=1
+correctedLat=1
+correctedLon=1
 Accuracy=1
 
 htu = HTU21()
@@ -75,22 +77,22 @@ app = FastAPI(
 @app.get("/GPSLat", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
-    return GPSLat
+    return BojeLat
 
 @app.get("/GPSLon", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
-    return GPSLon
+    return BojeLon
 
 @app.get("/cGPSPosLat", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
-    return cGPSLat
+    return correctedLat
 
 @app.get("/cGPSPosLon", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
-    return cGPSLon
+    return correctedLon
 
 @app.get("/UTMX", status_code=status.HTTP_200_OK)
 @version(1, 0)
@@ -337,7 +339,16 @@ sock_boot = socket.socket(socket.AF_INET, # Internet
 #LOGGING
 log_filepath = "logs/GNSS_"+time.strftime("%Y%m%d-%H%M%S")+ ".csv"
 delimiter = ';'
-header = ['date', 'NMEA_rover', 'NMEA_corrected', 'NMEA_base', 'tether_length', 'compass_boot', 'move_direction', 'depth', 'accuracy']
+header = ['date', 
+          'NMEA_boje', 
+          'NMEA_corrected', 
+          'NMEA_RTK', 
+          'tether_length', 
+          'compass_boot', 
+          'move_direction', 
+          'depth', 
+          'accuracy', 
+          'BojeLat','BojeLng','CoorectLat','CorrectLng','RTKLat','RTKLon']
 csvlogger = CsvLogger(filename=log_filepath,
                       delimiter=delimiter,
                       max_files=50,
@@ -417,31 +428,16 @@ def send_RTK():
         os.system("./sendRTK.sh")
         time.sleep(1)
 
-d_nmea_obj = None
-
-def rec_RTK():
-   global RTK
-   global RTKLON
-   global FIXLON
-   global RTKLAT
-   global FIXLAT
-   global RTKX
-   global RTKY
-   global d_nmea_obj
+def rec_Rover():
+   global rover_nmea_obj
 
    UDP_IP = "192.168.2.3"
    UDP_PORT = 28001
-   #sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM) # UDP
    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #TCP
    sock.bind((UDP_IP, UDP_PORT))
    sock.listen(1)
-   #try:
-   #   sock.connect((UDP_IP, UDP_PORT))
-   #   print("RTK connected")
-   #except socket.error as e:
-   #   print("Socket connection error: {0}".format(e))
-   #   return
-   print("TCP-Server started")
+
+   print("Rover-Server started")
    while True:
       #data, addr = sock.recvfrom(1024)
       connection, client = sock.accept()
@@ -457,14 +453,55 @@ def rec_RTK():
                   break
             #PARSE NMEA
             try:
-               d_nmea_obj = pynmea2.parse(data.decode('ascii'))
+               rover_nmea_obj = pynmea2.parse(data.decode('ascii'))
+            except pynmea2.ParseError as e:
+               print("Parse error: {0}".format(e))
+               continue
+
+
+      finally:
+         connection.close()
+
+def rec_RTK():
+   global RTK
+   global RTKLON
+   global FIXLON
+   global RTKLAT
+   global FIXLAT
+   global RTKX
+   global RTKY
+
+   UDP_IP = "192.168.2.3"
+   UDP_PORT = 28002
+   #sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM) # UDP
+   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #TCP
+   sock.bind((UDP_IP, UDP_PORT))
+   sock.listen(1)
+
+   print("RTK-Server started")
+   while True:
+      #data, addr = sock.recvfrom(1024)
+      connection, client = sock.accept()
+      try:
+         print("Connected to client IP: {}".format(client))
+         
+         # Receive and print data 32 bytes at a time, as long as the client is sending something
+         while True:
+            data = connection.recv(96)
+            print("Received RTK: {}".format(data))
+
+            if not data:
+                  break
+            #PARSE NMEA
+            try:
+               dgps_nmea_obj = pynmea2.parse(data.decode('ascii'))
             except pynmea2.ParseError as e:
                print("Parse error: {0}".format(e))
                continue
             
             # Base Station Koordinaten
-            RTKLAT=d_nmea_obj.latitude
-            RTKLON=d_nmea_obj.longitude
+            RTKLAT=dgps_nmea_obj.latitude
+            RTKLON=dgps_nmea_obj.longitude
 
             #Fixpunkt Koordinaten TODO: Als Parameter einstellbar machen
 
@@ -527,6 +564,10 @@ print("DGPS ACTIVE")
 thread_encoder = threading.Thread(target=rec_RTK, args=(), daemon=True)
 thread_encoder.start()
 
+thread_encoder = threading.Thread(target=rec_Rover, args=(), daemon=True)
+thread_encoder.start()
+
+
 print("Waiting for GGA-Messages...")
 counter = 0
 
@@ -538,10 +579,10 @@ def main():
    global distance
    global compass
    global depth
-   global GPSLat
-   global GPSLon
-   global cGPSLat
-   global cGPSLon
+   global BojeLat
+   global BojeLon
+   global correctedLat
+   global correctedLon
    global Accuracy
    global PrevUTMX
    global PrevUTMY
@@ -587,8 +628,8 @@ def main():
 
          ####CONVERT TO UTM
          try:
-            GPSLat=nmea_obj.latitude
-            GPSLon=nmea_obj.longitude
+            BojeLat=nmea_obj.latitude
+            BojeLon=nmea_obj.longitude
             
             #--> Coordinates to gdal point
             point.AddPoint(nmea_obj.latitude, nmea_obj.longitude)
@@ -631,8 +672,8 @@ def main():
                print("berechne Korrektur")
             else: print("SKIP CORRECTION")
 
-            cGPSLat=point.GetX()
-            cGPSLon=point.GetY()
+            correctedLat=point.GetX()
+            correctedLon=point.GetY()
 
             if enable_RTK:
                point.AddPoint(point.GetX()+RTKX, point.GetY()+RTKY)
@@ -668,7 +709,26 @@ def main():
                continue
             print("\nNew GGA:\n"+str(new_nmea))
             sendNMEAtoROV(new_nmea)
-            csvlogger.info([nmea_str.rstrip(), str(new_nmea), str(d_nmea_obj), str(distance), str(compass), str(direction), str(depth), str(Accuracy)])
+         #    ['date', 
+         #  'NMEA_rover', 
+         #  'NMEA_corrected', 
+         #  'NMEA_base', 
+         #  'tether_length', 
+         #  'compass_boot', 
+         #  'move_direction', 
+         #  'depth', 
+         #  'accuracy', 
+         #  'BojeLat','BojeLng','CoorectLat','CorrectLng','RTKLat','RTKLon']
+            csvlogger.info([
+               nmea_str.rstrip(), 
+               str(new_nmea), 
+               str(rover_nmea_obj), 
+               str(distance), 
+               str(compass), 
+               str(direction), 
+               str(depth), 
+               str(Accuracy),
+               str(BojeLat), str(BojeLon), str(correctedLat), str(correctedLon), str(rover_nmea_obj.latitude), str(rover_nmea_obj.longitude)])
          else:
             sendNMEAtoROV(nmea_str)
          ####LOG EVERYTHING TO CSV
