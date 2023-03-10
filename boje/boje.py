@@ -1,18 +1,16 @@
+import os
 import spidev #import the SPI library for RB Pi 4 B board
 import time #import the Timing library for RB Pi 4 B board
+import datetime
+import math
+import threading
+
 from urllib.parse import urlparse
 import requests
-import threading
-import os, sys
 import socket, serial
-import math
 from htu21 import HTU21
 import pynmea2
 from csv_logger import CsvLogger
-import logging
-print("Starting GNSS Correction Service\nCalculating GDAL Geometry...")
-from osgeo.ogr import Geometry, wkbPoint
-from osgeo.osr import SpatialReference, SpatialReference, CoordinateTransformation
 
 import uvicorn
 from fastapi.staticfiles import StaticFiles
@@ -20,13 +18,13 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi_versioning import VersionedFastAPI, version
 from pydantic import BaseModel
-import os
-import threading
-import datetime
-import os
-import time
+
+import numpy as np
 from typing import Any, Dict, Optional
 
+print("Starting GNSS Correction Service\nCalculating GDAL Geometry...")
+from osgeo.ogr import Geometry, wkbPoint
+from osgeo.osr import SpatialReference, SpatialReference, CoordinateTransformation
 
 # Zeuch für den Webserver
 
@@ -42,7 +40,9 @@ compass=0
 distance=0
 correction=1
 
-
+PrevDirection=0
+PrevUTMX=-1
+PrevUTMY=-1
 UTMX=1
 UTMY=1
 GPSLat=1
@@ -284,9 +284,9 @@ correction_possible = True
 
 # DGPS
 source = SpatialReference()
-source.ImportFromEPSG(4326)
+source.ImportFromEPSG(4326) # WGS84
 target = SpatialReference()
-target.ImportFromEPSG(5556)
+target.ImportFromEPSG(5556) # UTM zone 32N
 
 transform = CoordinateTransformation(source, target)
 transformback = CoordinateTransformation(target, source)
@@ -476,7 +476,7 @@ def sendNMEAtoROV(nmea):
    print("Sending to ROV "+BOOT_IP+":"+str(BOOT_PORT) + "...")
    sock_boot.sendto(bytes(str(nmea)+"\n",encoding='utf8'), (BOOT_IP, BOOT_PORT))
 
-#___________________________MAIN_______________________________        
+#___________________________MAIN_______________________________
 
 
 print("Starting Worker Threads...")
@@ -511,6 +511,9 @@ def main():
    global cGPSLat
    global cGPSLon
    global Accuracy
+   global PrevUTMX
+   global PrevUTMY
+   global PrevDirection
    while True:
       #correction_possible = True
       ####GET GGA FROM SERIAL
@@ -552,15 +555,33 @@ def main():
 
          ####CONVERT TO UTM
          try:
-            #offset meters to UTM
-            UTMY=math.sin(compass)*correction
-            UTMX=math.cos(compass)*correction
-
             GPSLat=nmea_obj.latitude
             GPSLon=nmea_obj.longitude
-
+            
             #--> Coordinates to gdal point
             point.AddPoint(nmea_obj.latitude, nmea_obj.longitude)
+
+            # copmute a direction from the last point to the current point
+            if PrevUTMX == -1 or PrevUTMY == -1:
+               PrevUTMX = point.GetX()
+               PrevUTMY = point.GetY()
+               print("SKIP CORRECTION DUE TO FIRST POINT")
+               continue
+
+            delta_x = point.GetX() - PrevUTMX
+            delta_y = point.GetY() - PrevUTMY
+            direction = (np.arctan2(delta_x, delta_y) * 180 / np.pi + 360) % 360
+            print("direction: " + str(direction))
+
+            #stash the current point for the next iteration
+            PrevUTMX = point.GetX()
+            PrevUTMY = point.GetY()
+            PrevDirection = direction
+
+            #offset meters to UTM
+            UTMY=math.sin(direction)*correction
+            UTMX=math.cos(direction)*correction
+
             if enable_RTK:
                point.AddPoint(point.GetX()+RTKX, point.GetY()+RTKY)
                Accuracy = getAccuracyEquip(distance, depth) + 0,35
@@ -573,7 +594,7 @@ def main():
             point.Transform(transform)
 
             #--> Actual Correction
-            if enable_correction:
+            if enable_correction:            
                point.AddPoint(point.GetX()+UTMX, point.GetY()+UTMY)
                print("berechne Korrektur")
             else: print("SKIP CORRECTION")
@@ -629,7 +650,7 @@ def main():
          print("#Correction skipped... something missing here...#")
          sendNMEAtoROV(nmea_str)
 
-
+#______________________MAIN LOOP________________________
 def loop():
     while True:
         try:
@@ -642,68 +663,5 @@ thread_Loop.start()
 
 
 
-
-uvicorn.run(app, host="0.0.0.0", port=80, log_config=None)
-
-
-#         os.system("clear")
-#      #Print boot data
-#      print("Tiefe")
-#      print(depth)
-#      print("Kompass")
-#      print(compass)
-#
-#      #Print RAW encoder data
-#      print("Result: " + str(result))
-#      print("RAWRotation: " + str(rotation))
-#      print("RAWTurns: " + str(turns))
-#
-#      #Convert RAW encoder data to Wheel-Turns float
-#      fturn = turns+( (rotation-4500)/16383 )
-#      print("Turns: " + str(fturn))
-#
-#      #Convert Turns to Distance(Buoy, UUV)
-#      distance = fturn/2.3806
-#      print("Meters: " + str(distance))
-#
-#      #Calculate Offset with Pythagoras | distance² = depth² + offset²
-#      correction = math.sqrt(math.pow(distance,2) - math.pow(depth,2))
-#      print("Correction-offset:" + str(correction))
-#      
-#      #Calc with compas in UTM
-#      UTMY=math.sin(compass)*correction
-#      UTMX=math.cos(compass)*correction
-#      
-#      #Angle 0 = cosinus 1 -- x
-#      #Angle 90 = sinus 1 --> y
-#      print("UTMX:" + str(UTMX))
-#      print("UTMY:" + str(UTMY))
-#      
-#      # 
-#      Lat="51.035540"
-#      Lon="13.735870"
-#      
-#      # --> Bringe die Koordinaten in gdal
-#      point.AddPoint(Lat, Lon)
-#      #--> Transformiere in UTM
-#      point.Transform(transform)
-#
-#      Accuracy = getAccuracy(distance, depth)
-#
-#      if RTK:
-#         point.AddPoint(point.GetX()+RTKX, point.GetY()+RTKY)
-#         Accuracy = Accuracy + 0,35
-#      else:
-#         Accuracy = Accuracy + 3
-#         
-#      point.AddPoint(point.GetX()+UTMX, point.GetY()+UTMY)
-#      point.Transform(transformback)
-#      
-#      
-#      Lat=point.GetX()
-#      Lon=point.GetY()
-#      Accuracy=Accuracy
-#      #Hier umwandeln in NMEA und ans Boot senden bitte David
-#      #Bitte im Paket angeben statt fix DGPS
-#   
-#      time.sleep(0.5)
+# Start Webserver
+uvicorn.run(app, host="0.0.0.0", port=81, log_config=None)
