@@ -37,7 +37,7 @@ RTKLON=1
 RTKX=1
 RTKY=1
 
-depth=1.5
+depth=1
 compass=0
 distance=0
 correction=1
@@ -357,7 +357,7 @@ def update_boot_values():
 
       try:
          alt = float(requests.get(alt_url).text)
-         #depth = 0.0 if alt < 0.0 else alt  #the ROV cannot fly yet
+         depth = 0.0 if alt < 0.0 else alt  #the ROV cannot fly yet
          compass = float(requests.get(compass_url).text)
          fail_counter = 0
       except requests.exceptions.RequestException as e:  # This is the correct syntax
@@ -411,9 +411,7 @@ def send_RTK():
         time.sleep(5)
         os.system("./sendRTK.sh")
         time.sleep(1)
-
-d_nmea_obj = None
-
+        
 def rec_RTK():
    global RTK
    global RTKLON
@@ -422,72 +420,47 @@ def rec_RTK():
    global FIXLAT
    global RTKX
    global RTKY
-   global d_nmea_obj
 
    UDP_IP = "192.168.2.3"
-   UDP_PORT = 28001
-   #sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM) # UDP
-   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #TCP
+   UDP_PORT = 28000
+   sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM) # UDP
    sock.bind((UDP_IP, UDP_PORT))
-   sock.listen(1)
-   #try:
-   #   sock.connect((UDP_IP, UDP_PORT))
-   #   print("RTK connected")
-   #except socket.error as e:
-   #   print("Socket connection error: {0}".format(e))
-   #   return
-   print("TCP-Server started")
    while True:
-      #data, addr = sock.recvfrom(1024)
-      connection, client = sock.accept()
+      data, addr = sock.recvfrom(1024)
+      print("received message: %s" % data)
+      
+      #PARSE NMEA
       try:
-         print("Connected to client IP: {}".format(client))
-         
-         # Receive and print data 32 bytes at a time, as long as the client is sending something
-         while True:
-            data = connection.recv(96)
-            print("Received RTK: {}".format(data))
+         d_nmea_obj = pynmea2.parse(data.decode('ascii'))
+      except pynmea2.ParseError as e:
+         print("Parse error: {0}".format(e))
+         continue
+      
+      # Base Station Koordinaten
+      #RTKLAT=d_nmea_obj.latitude
+      #RTKLON=d_nmea_obj.longitude
 
-            if not data:
-                  break
-            #PARSE NMEA
-            try:
-               d_nmea_obj = pynmea2.parse(data.decode('ascii'))
-            except pynmea2.ParseError as e:
-               print("Parse error: {0}".format(e))
-               continue
+      #Fixpunkt Koordinaten TODO: Als Parameter einstellbar machen
+
+
+      #Prüfen ob die Eingestellte RTK Koordinate richtig sein kann
+      if abs(RTKLAT-FIXLAT) < 100:
+         if abs(RTKLON-FIXLON) < 100:
+            RTK=True
+            RTKpoint(FIXLAT-RTKLAT,FIXLON-RTKLON)
+            RTKpoint.Transform(transform)
+            RTKX=RTKpoint.GetX()
+            RTKY=RTKpoint.GetY()
+
+            print("DGPS Lat/Lng: ", RTKLAT, RTKLON)
+            print("RTK X/Y: ", RTKX, RTKY)
             
-            # Base Station Koordinaten
-            RTKLAT=d_nmea_obj.latitude
-            RTKLON=d_nmea_obj.longitude
-
-            #Fixpunkt Koordinaten TODO: Als Parameter einstellbar machen
-
-
-            #Prüfen ob die Eingestellte RTK Koordinate richtig sein kann
-            if abs(RTKLAT-FIXLAT) < 100:
-               if abs(RTKLON-FIXLON) < 100:
-                  RTK=True
-                  RTKpoint(FIXLAT-RTKLAT,FIXLON-RTKLON)
-                  RTKpoint.Transform(transform)
-                  RTKX=RTKpoint.GetX()
-                  RTKY=RTKpoint.GetY()
-
-                  print("DGPS Lat/Lng: ", RTKLAT, RTKLON)
-                  print("RTK X/Y: ", RTKX, RTKY)
-                  
-               else: 
-                  RTK=False
-                  print("RTK fixpunkt falsch")
-            else: 
-               RTK=False
-               print("RTK fixpunkt falsch")
-
-      finally:
-         connection.close()
-      # data = sock.recv(1024)
-      
-      
+         else: 
+            RTK=False
+            print("RTK fixpunkt falsch")
+      else: 
+         RTK=False
+         print("RTK fixpunkt falsch")
 
 def getAccuracyEquip(distance, depth):
    #--> Bestimme Genauigkeit im schnitt 2cm pro meter 2cm bis 10m danach 2m --> TODO: Why these values?
@@ -517,10 +490,10 @@ thread_encoder = threading.Thread(target=update_encoder_values, args=(), daemon=
 thread_encoder.start()
 
 #start DGPS thread
-
-print("DGPS ACTIVE")
-thread_encoder = threading.Thread(target=rec_RTK, args=(), daemon=True)
-thread_encoder.start()
+if RTK:
+   print("DGPS ACTIVE")
+   thread_encoder = threading.Thread(target=rec_RTK, args=(), daemon=True)
+   thread_encoder.start()
 
 print("Waiting for GGA-Messages...")
 counter = 0
@@ -642,7 +615,7 @@ def main():
                continue
             print("\nNew GGA:\n"+str(new_nmea))
             sendNMEAtoROV(new_nmea)
-            csvlogger.info([nmea_str.rstrip(), str(new_nmea), str(d_nmea_obj), str(distance), str(compass), str(depth), str(Accuracy)])
+            csvlogger.info([nmea_str.rstrip(), str(new_nmea), 0, distance, compass, depth, Accuracy])
          else:
             sendNMEAtoROV(nmea_str)
          ####LOG EVERYTHING TO CSV
@@ -670,7 +643,7 @@ thread_Loop.start()
 
 
 
-uvicorn.run(app, host="0.0.0.0", port=81, log_config=None)
+uvicorn.run(app, host="0.0.0.0", port=80, log_config=None)
 
 
 #         os.system("clear")

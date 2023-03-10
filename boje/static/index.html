@@ -1,10 +1,11 @@
 <html>
 
 <head>
-    <title>Vue + Vuetify + backend Example Extension</title>
+    <title>GPS Data Buoy</title>
     <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
     <link href="/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="/css/vuetify.min.css" rel="stylesheet">
+    <link href="/css/leaflet.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 </head>
 
@@ -23,28 +24,54 @@
     <v-app>
         <v-main>
             <v-container>
+                <div style="height:600px; width:800px">
+                    <l-map ref="map" :zoom="zoom" :center="[DGPSfixLat, DGPSfixLon]">
+                      <l-tile-layer
+                        url='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+                        name="OpenSatteliteMap"
+                      ></l-tile-layer>
+                      <l-marker :lat-lng="[DGPSfixLat, DGPSfixLon]" draggable>
+                        <l-tooltip>
+                            D-GPS Fix
+                        </l-tooltip>
+                      </l-marker>
+                      <l-marker :lat-lng="[GPSLat, GPSLon]" >
+                        <l-tooltip>
+                            GPSLat
+                        </l-tooltip>
+                      </l-marker>
+                      <l-marker :lat-lng="[cGPSPosLat, cGPSPosLon]" >
+                        <l-tooltip>
+                            cGPSPos (Whatever this is bommel)
+                        </l-tooltip>
+                      </l-marker>
+                    </l-map>
+                </div>
                 <h1>GPS-Position</h1>
                 <!-- This card is from  https://vuetifyjs.com/en/components/cards/#outlined -->
                 <br>
                 <v-row>
-                    <v-card class="mx-auto" max-width="200" max-height="150" outlined>
+                    <v-card class="mx-auto" 
+                            max-width="200" 
+                            max-height="150" 
+                            outlined>
                         <b>GPS Lat:</b>
-                        <v-text-field v-model="GPSLat">
+                        <v-text-field v-model="GPSData.GPSLat">
                         </v-text-field>
                     </v-card>
                     <v-card class="mx-auto" max-width="200" max-height="150" outlined>
                         <b>GPS Lon:</b>
-                        <v-text-field v-model="GPSLon">
+                        <v-text-field v-model="GPSData.GPSLon">
                         </v-text-field>
                     </v-card>
                     <v-card class="mx-auto" max-width="200" max-height="150" outlined>
                         <b>cor GPS Lat:</b>
-                        <v-text-field v-model="cGPSPosLat">
+                        <v-text-field v-model="GPSData.cGPSPosLat">
                         </v-text-field>
                     </v-card>
                     <v-card class="mx-auto" max-width="200" max-height="150" outlined>
                         <b>cor GPS Lon:</b>
-                        <v-text-field v-model="cGPSPosLon">
+                        <v-text-field v-model="GPSData.cGPSPosLon">
                         </v-text-field>
                     </v-card>
                     <v-card class="mx-auto" max-width="200" max-height="150" outlined>
@@ -57,9 +84,7 @@
                         <v-text-field v-model="UTMY">
                         </v-text-field>
                     </v-card>
-
                 </v-row>
-
 
                 <br>
                 <h1>Data for correction</h1>
@@ -72,7 +97,7 @@
                         </v-text-field>
                     </v-card>
                     <v-card class="mx-auto" max-width="200" max-height="150" outlined>
-                        <b>Lenght:</b>
+                        <b>Length:</b>
                         <v-text-field v-model="Lenght">
                         </v-text-field>
                     </v-card>
@@ -97,8 +122,6 @@
                 <h1>DGPS Positions</h1>
                 <br>
 				<v-row>
-
-
                     <v-card class="mx-auto" max-width="300" max-height="150" outlined>
                         <b>DGPS Pos Lat</b>
                         <v-text-field v-model="DGPSposLat">
@@ -133,15 +156,11 @@
                         <v-text-field v-model="DGPScorrY">
                         </v-text-field>
                     </v-card>
-
                 </v-row>
                 <br> 
 				<h1>Time</h1>
                 <br> 
 				<v-row>
-
-
-					
 					<v-card class="mx-auto" max-width="300" max-height="250" outlined>
                         <b>Time</b>
                         <v-text-field v-model="timeBoje">
@@ -175,30 +194,48 @@
 <script src="/js/vue.js"></script>
 <script src="/js/vuetify.js"></script>
 <script src="/js/axios.min.js"></script>
+<script src="/js/leaflet.js"></script>
+<script src="/js/vue2-leaflet.min.js"></script>
 
 <script>
     Vue.config.devtools = true;
     new Vue({
         el: '#app',
         vuetify: new Vuetify(),
+        components: {
+            'l-map': window.Vue2Leaflet.LMap,
+            'l-tile-layer': window.Vue2Leaflet.LTileLayer,
+            'l-marker': window.Vue2Leaflet.LMarker,
+            'l-control-layers': window.Vue2Leaflet.LControlLayers,
+            'l-tooltip': window.Vue2Leaflet.LTooltip,
+            'l-popup': window.Vue2Leaflet.LPopup,
+            'l-polyline': window.Vue2Leaflet.LPolyline,
+            'l-polygon': window.Vue2Leaflet.LPolygon,
+            'l-rectangle': window.Vue2Leaflet.LRectangle,
+        },
         data() {
             return {
-                GPSLat: "",
-                GPSLon: "",
-                cGPSPosLat: "",
-                cGPSPosLon: "",
-                dGPSPos: "",
+                zoom: 21,
 
-                Depth: "",
-                Lenght: "",
-                Correction: "",
+                GPSData: {
+                    GPSLat: "0",
+                    GPSLon: "0",
+                    cGPSPosLat: "0",
+                    cGPSPosLon: "0",
+                    dGPSPos: "0",
+                },
+                
+
+                Depth: "0",
+                Lenght: "0",
+                Correction: "0",
                 Direction: "",
                 Accuracy: "",
                 
                 DGPSposLat: "",
                 DGPSposLon: "",
-                DGPSfixLat: "",
-                DGPSfixLon: "",
+                DGPSfixLat: "51.07205984",
+                DGPSfixLon: "13.59835664",
                 DGPScorrX: "",
                 DGPScorrY: "",
 
@@ -210,87 +247,79 @@
             }
         }, 
         methods: {
-
 			async reloadTextFromBackend() {
-
-
-                
-
-
-
-
-                axios.get("/v1.0/GPSLat").then(response => {
-                    this.GPSLat = response.data;
+                await axios.get("/v1.0/GPSLat").then(response => {
+                    this.GPSData.GPSLat = response.data;
                 })
-                axios.get("/v1.0/GPSLon").then(response => {
-                    this.GPSLon = response.data;
+                await axios.get("/v1.0/GPSLon").then(response => {
+                    this.GPSData.GPSLon = response.data;
                 })
-                axios.get("/v1.0/cGPSPosLat").then(response => {
-                    this.cGPSPosLat = response.data;
+                await axios.get("/v1.0/cGPSPosLat").then(response => {
+                    this.GPSData.cGPSPosLat = response.data;
                 })
-                axios.get("/v1.0/cGPSPosLon").then(response => {
-                    this.cGPSPosLon = response.data;
+                await axios.get("/v1.0/cGPSPosLon").then(response => {
+                    this.GPSData.cGPSPosLon = response.data;
                 })
-                axios.get("/v1.0/UTMX").then(response => {
+                await axios.get("/v1.0/UTMX").then(response => {
                     this.UTMX = response.data;
                 })
 
-                axios.get("/v1.0/UTMY").then(response => {
+                await axios.get("/v1.0/UTMY").then(response => {
                     this.UTMY = response.data;
                 })
 
 
-                axios.get("/v1.0/Depth").then(response => {
+                await axios.get("/v1.0/Depth").then(response => {
                     this.Depth = response.data;
                 })
-                axios.get("/v1.0/Lenght").then(response => {
+                await axios.get("/v1.0/Lenght").then(response => {
                     this.Lenght = response.data;
                 })
-                axios.get("/v1.0/Correction").then(response => {
+                await axios.get("/v1.0/Correction").then(response => {
                     this.Correction = response.data;
                 })
-                axios.get("/v1.0/Direction").then(response => {
+                await axios.get("/v1.0/Direction").then(response => {
                     this.Direction = response.data;
                 })
-                axios.get("/v1.0/Accuracy").then(response => {
+                await axios.get("/v1.0/Accuracy").then(response => {
                     this.Accuracy = response.data;
                 })
 
 
 
 
-                axios.get("/v1.0/DGPSposLat").then(response => {
+                await axios.get("/v1.0/DGPSposLat").then(response => {
                     this.DGPSposLat = response.data;
                 })
-                axios.get("/v1.0/DGPSposLon").then(response => {
+                await axios.get("/v1.0/DGPSposLon").then(response => {
                     this.DGPSposLon = response.data;
                 })
-                axios.get("/v1.0/DGPScorrX").then(response => {
+                await axios.get("/v1.0/DGPScorrX").then(response => {
                     this.DGPScorrX = response.data;
                 })
-                axios.get("/v1.0/DGPScorrY").then(response => {
+                await axios.get("/v1.0/DGPScorrY").then(response => {
                     this.DGPScorrY = response.data;
                 })
 
 
-                axios.get("/v1.0/GetTime").then(response => {
+                await axios.get("/v1.0/GetTime").then(response => {
                     this.timeBoje = response.data;
                 })
 
-                axios.get("/v1.0/GetTemp").then(response => {
+                await axios.get("/v1.0/GetTemp").then(response => {
                     this.temp = response.data;
                 })
 
-                axios.get("/v1.0/GetHum").then(response => {
+                await axios.get("/v1.0/GetHum").then(response => {
                     this.hum = response.data;
                 })
 
             },
             async loadTextFromBackend() {
-                axios.get("/v1.0/DGPSfixLat").then(response => {
+                await axios.get("/v1.0/DGPSfixLat").then(response => {
                     this.DGPSfixLat = response.data;
                 })
-                axios.get("/v1.0/DGPSfixLon").then(response => {
+                await axios.get("/v1.0/DGPSfixLon").then(response => {
                     this.DGPSfixLon = response.data;
                 })
             },
@@ -305,33 +334,33 @@
                 })
             },
             async setDPGS() {
-                axios.post('/v1.0/setDGPSLat', {
+                await axios.post('/v1.0/setDGPSLat', {
                     data: this.DGPSfixLat,
                 })
-                axios.post('/v1.0/setDGPSLon', {
+                await axios.post('/v1.0/setDGPSLon', {
                     data: this.DGPSfixLon,
                 })
             },
             async enableDGPS(value) {
-                axios.post('/v1.0/enableDGPS', {
+                await axios.post('/v1.0/enableDGPS', {
                     data: value,
                 })
             },
             async enableCalc(value) {
-                axios.post('/v1.0/enableCalc', {
+                await axios.post('/v1.0/enableCalc', {
                     data: value,
                 })
             },
 
 
             async restart() {
-                axios.post('/v1.0/restart', {
+                await axios.post('/v1.0/restart', {
                     
                 })
             },            
 
             async setTime() {
-                axios.post('/v1.0/setTime', {
+                await axios.post('/v1.0/setTime', {
                     
                 })
             }
