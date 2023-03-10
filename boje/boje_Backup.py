@@ -1,16 +1,18 @@
-import os
 import spidev #import the SPI library for RB Pi 4 B board
 import time #import the Timing library for RB Pi 4 B board
-import datetime
-import math
-import threading
-
 from urllib.parse import urlparse
 import requests
+import threading
+import os, sys
 import socket, serial
+import math
 from htu21 import HTU21
 import pynmea2
 from csv_logger import CsvLogger
+import logging
+print("Starting GNSS Correction Service\nCalculating GDAL Geometry...")
+from osgeo.ogr import Geometry, wkbPoint
+from osgeo.osr import SpatialReference, SpatialReference, CoordinateTransformation
 
 import uvicorn
 from fastapi.staticfiles import StaticFiles
@@ -18,13 +20,13 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi_versioning import VersionedFastAPI, version
 from pydantic import BaseModel
-
-import numpy as np
+import os
+import threading
+import datetime
+import os
+import time
 from typing import Any, Dict, Optional
 
-print("Starting GNSS Correction Service\nCalculating GDAL Geometry...")
-from osgeo.ogr import Geometry, wkbPoint
-from osgeo.osr import SpatialReference, SpatialReference, CoordinateTransformation
 
 # Zeuch für den Webserver
 
@@ -35,14 +37,12 @@ RTKLON=1
 RTKX=1
 RTKY=1
 
-depth=1.5
+depth=1
 compass=0
 distance=0
 correction=1
 
-PrevDirection=0
-PrevUTMX=-1
-PrevUTMY=-1
+
 UTMX=1
 UTMY=1
 GPSLat=1
@@ -284,9 +284,9 @@ correction_possible = True
 
 # DGPS
 source = SpatialReference()
-source.ImportFromEPSG(4326) # WGS84
+source.ImportFromEPSG(4326)
 target = SpatialReference()
-target.ImportFromEPSG(5556) # UTM zone 32N
+target.ImportFromEPSG(5556)
 
 transform = CoordinateTransformation(source, target)
 transformback = CoordinateTransformation(target, source)
@@ -357,7 +357,7 @@ def update_boot_values():
 
       try:
          alt = float(requests.get(alt_url).text)
-         #depth = 0.0 if alt < 0.0 else alt  #the ROV cannot fly yet
+         depth = 0.0 if alt < 0.0 else alt  #the ROV cannot fly yet
          compass = float(requests.get(compass_url).text)
          fail_counter = 0
       except requests.exceptions.RequestException as e:  # This is the correct syntax
@@ -411,9 +411,7 @@ def send_RTK():
         time.sleep(5)
         os.system("./sendRTK.sh")
         time.sleep(1)
-
-d_nmea_obj = None
-
+        
 def rec_RTK():
    global RTK
    global RTKLON
@@ -422,72 +420,47 @@ def rec_RTK():
    global FIXLAT
    global RTKX
    global RTKY
-   global d_nmea_obj
 
    UDP_IP = "192.168.2.3"
-   UDP_PORT = 28001
-   #sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM) # UDP
-   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #TCP
+   UDP_PORT = 28000
+   sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM) # UDP
    sock.bind((UDP_IP, UDP_PORT))
-   sock.listen(1)
-   #try:
-   #   sock.connect((UDP_IP, UDP_PORT))
-   #   print("RTK connected")
-   #except socket.error as e:
-   #   print("Socket connection error: {0}".format(e))
-   #   return
-   print("TCP-Server started")
    while True:
-      #data, addr = sock.recvfrom(1024)
-      connection, client = sock.accept()
+      data, addr = sock.recvfrom(1024)
+      print("received message: %s" % data)
+      
+      #PARSE NMEA
       try:
-         print("Connected to client IP: {}".format(client))
-         
-         # Receive and print data 32 bytes at a time, as long as the client is sending something
-         while True:
-            data = connection.recv(96)
-            print("Received RTK: {}".format(data))
+         d_nmea_obj = pynmea2.parse(data.decode('ascii'))
+      except pynmea2.ParseError as e:
+         print("Parse error: {0}".format(e))
+         continue
+      
+      # Base Station Koordinaten
+      #RTKLAT=d_nmea_obj.latitude
+      #RTKLON=d_nmea_obj.longitude
 
-            if not data:
-                  break
-            #PARSE NMEA
-            try:
-               d_nmea_obj = pynmea2.parse(data.decode('ascii'))
-            except pynmea2.ParseError as e:
-               print("Parse error: {0}".format(e))
-               continue
+      #Fixpunkt Koordinaten TODO: Als Parameter einstellbar machen
+
+
+      #Prüfen ob die Eingestellte RTK Koordinate richtig sein kann
+      if abs(RTKLAT-FIXLAT) < 100:
+         if abs(RTKLON-FIXLON) < 100:
+            RTK=True
+            RTKpoint(FIXLAT-RTKLAT,FIXLON-RTKLON)
+            RTKpoint.Transform(transform)
+            RTKX=RTKpoint.GetX()
+            RTKY=RTKpoint.GetY()
+
+            print("DGPS Lat/Lng: ", RTKLAT, RTKLON)
+            print("RTK X/Y: ", RTKX, RTKY)
             
-            # Base Station Koordinaten
-            RTKLAT=d_nmea_obj.latitude
-            RTKLON=d_nmea_obj.longitude
-
-            #Fixpunkt Koordinaten TODO: Als Parameter einstellbar machen
-
-
-            #Prüfen ob die Eingestellte RTK Koordinate richtig sein kann
-            if abs(RTKLAT-FIXLAT) < 100:
-               if abs(RTKLON-FIXLON) < 100:
-                  RTK=True
-                  RTKpoint(FIXLAT-RTKLAT,FIXLON-RTKLON)
-                  RTKpoint.Transform(transform)
-                  RTKX=RTKpoint.GetX()
-                  RTKY=RTKpoint.GetY()
-
-                  print("DGPS Lat/Lng: ", RTKLAT, RTKLON)
-                  print("RTK X/Y: ", RTKX, RTKY)
-                  
-               else: 
-                  RTK=False
-                  print("RTK fixpunkt falsch")
-            else: 
-               RTK=False
-               print("RTK fixpunkt falsch")
-
-      finally:
-         connection.close()
-      # data = sock.recv(1024)
-      
-      
+         else: 
+            RTK=False
+            print("RTK fixpunkt falsch")
+      else: 
+         RTK=False
+         print("RTK fixpunkt falsch")
 
 def getAccuracyEquip(distance, depth):
    #--> Bestimme Genauigkeit im schnitt 2cm pro meter 2cm bis 10m danach 2m --> TODO: Why these values?
@@ -503,7 +476,7 @@ def sendNMEAtoROV(nmea):
    print("Sending to ROV "+BOOT_IP+":"+str(BOOT_PORT) + "...")
    sock_boot.sendto(bytes(str(nmea)+"\n",encoding='utf8'), (BOOT_IP, BOOT_PORT))
 
-#___________________________MAIN_______________________________
+#___________________________MAIN_______________________________        
 
 
 print("Starting Worker Threads...")
@@ -517,10 +490,10 @@ thread_encoder = threading.Thread(target=update_encoder_values, args=(), daemon=
 thread_encoder.start()
 
 #start DGPS thread
-
-print("DGPS ACTIVE")
-thread_encoder = threading.Thread(target=rec_RTK, args=(), daemon=True)
-thread_encoder.start()
+if RTK:
+   print("DGPS ACTIVE")
+   thread_encoder = threading.Thread(target=rec_RTK, args=(), daemon=True)
+   thread_encoder.start()
 
 print("Waiting for GGA-Messages...")
 counter = 0
@@ -538,9 +511,6 @@ def main():
    global cGPSLat
    global cGPSLon
    global Accuracy
-   global PrevUTMX
-   global PrevUTMY
-   global PrevDirection
    while True:
       #correction_possible = True
       ####GET GGA FROM SERIAL
@@ -582,33 +552,15 @@ def main():
 
          ####CONVERT TO UTM
          try:
+            #offset meters to UTM
+            UTMY=math.sin(compass)*correction
+            UTMX=math.cos(compass)*correction
+
             GPSLat=nmea_obj.latitude
             GPSLon=nmea_obj.longitude
-            
+
             #--> Coordinates to gdal point
             point.AddPoint(nmea_obj.latitude, nmea_obj.longitude)
-
-            # copmute a direction from the last point to the current point
-            if PrevUTMX == -1 or PrevUTMY == -1:
-               PrevUTMX = point.GetX()
-               PrevUTMY = point.GetY()
-               print("SKIP CORRECTION DUE TO FIRST POINT")
-               continue
-
-            delta_x = point.GetX() - PrevUTMX
-            delta_y = point.GetY() - PrevUTMY
-            direction = (np.arctan2(delta_x, delta_y) * 180 / np.pi + 360) % 360
-            print("direction: " + str(direction))
-
-            #stash the current point for the next iteration
-            PrevUTMX = point.GetX()
-            PrevUTMY = point.GetY()
-            PrevDirection = direction
-
-            #offset meters to UTM
-            UTMY=math.sin(direction)*correction
-            UTMX=math.cos(direction)*correction
-
             if enable_RTK:
                point.AddPoint(point.GetX()+RTKX, point.GetY()+RTKY)
                Accuracy = getAccuracyEquip(distance, depth) + 0,35
@@ -621,7 +573,7 @@ def main():
             point.Transform(transform)
 
             #--> Actual Correction
-            if enable_correction:            
+            if enable_correction:
                point.AddPoint(point.GetX()+UTMX, point.GetY()+UTMY)
                print("berechne Korrektur")
             else: print("SKIP CORRECTION")
@@ -663,7 +615,7 @@ def main():
                continue
             print("\nNew GGA:\n"+str(new_nmea))
             sendNMEAtoROV(new_nmea)
-            csvlogger.info([nmea_str.rstrip(), str(new_nmea), str(d_nmea_obj), str(distance), str(compass), str(depth), str(Accuracy)])
+            csvlogger.info([nmea_str.rstrip(), str(new_nmea), 0, distance, compass, depth, Accuracy])
          else:
             sendNMEAtoROV(nmea_str)
          ####LOG EVERYTHING TO CSV
@@ -677,7 +629,7 @@ def main():
          print("#Correction skipped... something missing here...#")
          sendNMEAtoROV(nmea_str)
 
-#______________________MAIN LOOP________________________
+
 def loop():
     while True:
         try:
@@ -690,5 +642,68 @@ thread_Loop.start()
 
 
 
-# Start Webserver
-uvicorn.run(app, host="0.0.0.0", port=81, log_config=None)
+
+uvicorn.run(app, host="0.0.0.0", port=80, log_config=None)
+
+
+#         os.system("clear")
+#      #Print boot data
+#      print("Tiefe")
+#      print(depth)
+#      print("Kompass")
+#      print(compass)
+#
+#      #Print RAW encoder data
+#      print("Result: " + str(result))
+#      print("RAWRotation: " + str(rotation))
+#      print("RAWTurns: " + str(turns))
+#
+#      #Convert RAW encoder data to Wheel-Turns float
+#      fturn = turns+( (rotation-4500)/16383 )
+#      print("Turns: " + str(fturn))
+#
+#      #Convert Turns to Distance(Buoy, UUV)
+#      distance = fturn/2.3806
+#      print("Meters: " + str(distance))
+#
+#      #Calculate Offset with Pythagoras | distance² = depth² + offset²
+#      correction = math.sqrt(math.pow(distance,2) - math.pow(depth,2))
+#      print("Correction-offset:" + str(correction))
+#      
+#      #Calc with compas in UTM
+#      UTMY=math.sin(compass)*correction
+#      UTMX=math.cos(compass)*correction
+#      
+#      #Angle 0 = cosinus 1 -- x
+#      #Angle 90 = sinus 1 --> y
+#      print("UTMX:" + str(UTMX))
+#      print("UTMY:" + str(UTMY))
+#      
+#      # 
+#      Lat="51.035540"
+#      Lon="13.735870"
+#      
+#      # --> Bringe die Koordinaten in gdal
+#      point.AddPoint(Lat, Lon)
+#      #--> Transformiere in UTM
+#      point.Transform(transform)
+#
+#      Accuracy = getAccuracy(distance, depth)
+#
+#      if RTK:
+#         point.AddPoint(point.GetX()+RTKX, point.GetY()+RTKY)
+#         Accuracy = Accuracy + 0,35
+#      else:
+#         Accuracy = Accuracy + 3
+#         
+#      point.AddPoint(point.GetX()+UTMX, point.GetY()+UTMY)
+#      point.Transform(transformback)
+#      
+#      
+#      Lat=point.GetX()
+#      Lon=point.GetY()
+#      Accuracy=Accuracy
+#      #Hier umwandeln in NMEA und ans Boot senden bitte David
+#      #Bitte im Paket angeben statt fix DGPS
+#   
+#      time.sleep(0.5)
