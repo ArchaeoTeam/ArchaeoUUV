@@ -704,8 +704,8 @@ def main():
                                                             str(nmea_obj.geo_sep_units), 
                                                             str(nmea_obj.age_gps_data),     # Age of correction data?
                                                             str(nmea_obj.ref_station_id)))
-            except:
-               print("Error while generating GGA")
+            except Exception as e:
+               print("Error while generating GGA + " + str(e))
                continue
             print("\nNew GGA:\n"+str(new_nmea))
             sendNMEAtoROV(new_nmea)
