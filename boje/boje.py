@@ -127,6 +127,11 @@ async def loadData() -> Any:
 @app.get("/Direction", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
+    return PrevDirection
+
+@app.get("/Compass", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
     return compass
 
 @app.get("/Accuracy", status_code=status.HTTP_200_OK)

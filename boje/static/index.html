@@ -116,7 +116,11 @@
                         <v-text-field v-model="Accuracy">
                         </v-text-field>
                     </v-card>
-                    
+                    <v-card class="mx-auto" max-width="200" max-height="150" outlined>
+                        <b>Compass ROV:</b>
+                        <v-text-field v-model="Compass">
+                        </v-text-field>
+                    </v-card>
                 </v-row>
 				<br> 
                 <h1>DGPS Positions</h1>
@@ -230,6 +234,7 @@
                 Lenght: "0",
                 Correction: "0",
                 Direction: "",
+                Comapss: "",
                 Accuracy: "",
                 
                 DGPSposLat: "",
@@ -280,6 +285,9 @@
                 })
                 await axios.get("/v1.0/Direction").then(response => {
                     this.Direction = response.data;
+                })
+                await axios.get("/v1.0/Compass").then(response => {
+                    this.Comapss = response.data;
                 })
                 await axios.get("/v1.0/Accuracy").then(response => {
                     this.Accuracy = response.data;
