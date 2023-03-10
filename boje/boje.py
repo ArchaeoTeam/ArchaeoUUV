@@ -332,7 +332,7 @@ sock_boot = socket.socket(socket.AF_INET, # Internet
 #LOGGING
 log_filepath = "logs/GNSS_"+time.strftime("%Y%m%d-%H%M%S")+ ".csv"
 delimiter = ';'
-header = ['date', 'NMEA_rover', 'NMEA_corrected', 'NMEA_base', 'tether_length', 'compass', 'depth', 'accuracy']
+header = ['date', 'NMEA_rover', 'NMEA_corrected', 'NMEA_base', 'tether_length', 'compass_boot', 'move_direction', 'depth', 'accuracy']
 csvlogger = CsvLogger(filename=log_filepath,
                       delimiter=delimiter,
                       max_files=50,
@@ -663,7 +663,7 @@ def main():
                continue
             print("\nNew GGA:\n"+str(new_nmea))
             sendNMEAtoROV(new_nmea)
-            csvlogger.info([nmea_str.rstrip(), str(new_nmea), str(d_nmea_obj), str(distance), str(compass), str(depth), str(Accuracy)])
+            csvlogger.info([nmea_str.rstrip(), str(new_nmea), str(d_nmea_obj), str(distance), str(compass), str(direction), str(depth), str(Accuracy)])
          else:
             sendNMEAtoROV(nmea_str)
          ####LOG EVERYTHING TO CSV
