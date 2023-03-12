@@ -18,9 +18,10 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi_versioning import VersionedFastAPI, version
 from pydantic import BaseModel
+from typing import Any, Dict, Optional
 
 import numpy as np
-from typing import Any, Dict, Optional
+
 
 print("Starting GNSS Correction Service\nCalculating GDAL Geometry...")
 from osgeo.ogr import Geometry, wkbPoint
@@ -40,7 +41,7 @@ rover_nmea_obj=None
 depth=1.5
 compass=0
 distance=0
-correction=1
+correction_offset=1
 
 PrevDirection=0
 PrevUTMX=-1
@@ -51,7 +52,7 @@ BojeLat=1
 BojeLon=1
 correctedLat=1
 correctedLon=1
-Accuracy=1
+accuracy=1
 
 htu = HTU21()
 
@@ -124,7 +125,7 @@ async def loadData() -> Any:
 @app.get("/Correction", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
-    return correction
+    return correction_offset
 
 @app.get("/Direction", status_code=status.HTTP_200_OK)
 @version(1, 0)
@@ -139,7 +140,7 @@ async def loadData() -> Any:
 @app.get("/Accuracy", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
-    return Accuracy
+    return accuracy
 
 
 
@@ -299,7 +300,7 @@ transform = CoordinateTransformation(source, target)
 transformback = CoordinateTransformation(target, source)
 point = Geometry(wkbPoint)
 RTKpoint = Geometry(wkbPoint)
-RTK = False
+rtk_possible = False
 
 
 
@@ -317,14 +318,14 @@ speed_hz=500000 #setting the speed in hz
 
 #ENCODER VALUES
 delay_us=3 #setting the delay in microseconds
-Accuracy = 0
+accuracy = 0
 turns = 0   #number of turns of the wheel
 rotation = 0 #position of wheel
 distance = 0 #in meters between buoy and ROV
 result = []
 
-alt_url="http://192.168.2.2:6040/mavlink/vehicles/1/components/1/messages/AHRS2/message/altitude"
-compass_url="http://192.168.2.2:6040/mavlink/vehicles/1/components/1/messages/VFR_HUD/message/heading"
+ALTITUDE_URL="http://192.168.2.2:6040/mavlink/vehicles/1/components/1/messages/AHRS2/message/altitude"
+COMPASS_URL="http://192.168.2.2:6040/mavlink/vehicles/1/components/1/messages/VFR_HUD/message/heading"
 
 
 #SERIAL GPS
@@ -363,7 +364,7 @@ def decTodms(deg):
      s = (md - m) * 60
      return "{:03d}{:07.4f}".format(d, m + (s / 60))
 
-def update_boot_values():
+def updateRovValues():
    fail_counter = 0
 
    while True:
@@ -372,9 +373,9 @@ def update_boot_values():
       global correction_possible
 
       try:
-         alt = float(requests.get(alt_url).text)
+         alt = float(requests.get(ALTITUDE_URL).text)
          #depth = 0.0 if alt < 0.0 else alt  #the ROV cannot fly yet
-         compass = float(requests.get(compass_url).text)
+         compass = float(requests.get(COMPASS_URL).text)
          fail_counter = 0
       except requests.exceptions.RequestException as e:  # This is the correct syntax
          print("Failed to GET depth and compass values from ROV...")
@@ -384,7 +385,7 @@ def update_boot_values():
             print("No connection to ROV. GNSS correction is not possible!")
       time.sleep(0.1)
 
-def update_encoder_values():
+def updateEncoderValues():
    while True:
       global turns
       global rotation
@@ -422,13 +423,13 @@ def readSerialNMEA(ser):
          correction_possible = False
          return None
 
-def send_RTK():
+def sendRTK():
     while True:
         time.sleep(5)
         os.system("./sendRTK.sh")
         time.sleep(1)
 
-def rec_Rover():
+def recRover():
    global rover_nmea_obj
 
    UDP_IP = "192.168.2.3"
@@ -439,31 +440,28 @@ def rec_Rover():
 
    print("Rover-Server started")
    while True:
-      #data, addr = sock.recvfrom(1024)
       connection, client = sock.accept()
       try:
          print("Connected to client IP: {}".format(client))
          
-         # Receive and print data 32 bytes at a time, as long as the client is sending something
+         # Receive and print data 96 bytes at a time, as long as the client is sending something
          while True:
             data = connection.recv(96)
             print("Received RTK: {}".format(data))
 
             if not data:
-                  break
+               break
             #PARSE NMEA
             try:
                rover_nmea_obj = pynmea2.parse(data.decode('ascii'))
             except pynmea2.ParseError as e:
                print("Parse error: {0}".format(e))
                continue
-
-
       finally:
          connection.close()
 
-def rec_RTK():
-   global RTK
+def recRTK():
+   global rtk_possible
    global RTKLON
    global FIXLON
    global RTKLAT
@@ -509,7 +507,7 @@ def rec_RTK():
             #Prüfen ob die Eingestellte RTK Koordinate richtig sein kann
             if abs(RTKLAT-FIXLAT) < 100:
                if abs(RTKLON-FIXLON) < 100:
-                  RTK=True
+                  rtk_possible=True
                   RTKpoint(FIXLAT-RTKLAT,FIXLON-RTKLON)
                   RTKpoint.Transform(transform)
                   RTKX=RTKpoint.GetX()
@@ -519,10 +517,10 @@ def rec_RTK():
                   print("RTK X/Y: ", RTKX, RTKY)
                   
                else: 
-                  RTK=False
+                  rtk_possible=False
                   print("RTK fixpunkt falsch")
             else: 
-               RTK=False
+               rtk_possible=False
                print("RTK fixpunkt falsch")
 
       finally:
@@ -551,20 +549,20 @@ def sendNMEAtoROV(nmea):
 print("Starting Worker Threads...")
 
 #start depth & compass thread
-thread_boot = threading.Thread(target=update_boot_values, args=(), daemon=True)
+thread_boot = threading.Thread(target=updateRovValues, args=(), daemon=True)
 thread_boot.start()
 
 #start encoder thread
-thread_encoder = threading.Thread(target=update_encoder_values, args=(), daemon=True)
+thread_encoder = threading.Thread(target=updateEncoderValues, args=(), daemon=True)
 thread_encoder.start()
 
 #start DGPS thread
 
 print("DGPS ACTIVE")
-thread_encoder = threading.Thread(target=rec_RTK, args=(), daemon=True)
+thread_encoder = threading.Thread(target=recRTK, args=(), daemon=True)
 thread_encoder.start()
 
-thread_encoder = threading.Thread(target=rec_Rover, args=(), daemon=True)
+thread_encoder = threading.Thread(target=recRover, args=(), daemon=True)
 thread_encoder.start()
 
 
@@ -575,7 +573,7 @@ def main():
    global UTMX
    global counter
    global UTMY
-   global correction
+   global correction_offset
    global distance
    global compass
    global depth
@@ -583,7 +581,7 @@ def main():
    global BojeLon
    global correctedLat
    global correctedLon
-   global Accuracy
+   global accuracy
    global PrevUTMX
    global PrevUTMY
    global PrevDirection
@@ -616,12 +614,12 @@ def main():
          if depth > distance:
             print("skipping bc depth bigger distance...")
             print("distance=" + str(distance) + "\ndepth=" + str(depth))
-            csvlogger.info([nmea_str.rstrip(), "dist-depth-error", 0, distance, compass, depth, Accuracy])
+            csvlogger.info([nmea_str.rstrip(), "dist-depth-error", 0, distance, compass, depth, accuracy])
             sendNMEAtoROV(nmea_obj)
             continue
 
-         correction = math.sqrt(math.pow(distance,2) - math.pow(depth,2))
-         print("Correction-offset:" + str(correction) + " m")
+         correction_offset = math.sqrt(math.pow(distance,2) - math.pow(depth,2))
+         print("Correction-offset:" + str(correction_offset) + " m")
 
 
 
@@ -652,16 +650,17 @@ def main():
             PrevDirection = direction
 
             #offset meters to UTM
-            UTMY=math.sin(direction)*correction
-            UTMX=math.cos(direction)*correction
+            UTMY=math.sin(direction)*correction_offset
+            UTMX=math.cos(direction)*correction_offset
 
             if enable_RTK:
                point.AddPoint(point.GetX()+RTKX, point.GetY()+RTKY)
-               Accuracy = getAccuracyEquip(distance, depth) + 0,35
+               accuracy = getAccuracyEquip(distance, depth) + 0,35
                print("berechne DGPS")
             else:
-               Accuracy = getAccuracyEquip(distance, depth) + 3
-            print("Accuracy:" + str(Accuracy) + " m")
+               print("SKIP DGPS")
+               accuracy = getAccuracyEquip(distance, depth) + 3
+            print("Accuracy:" + str(accuracy) + " m")
 
             #--> Transform to UTM
             point.Transform(transform)
@@ -671,18 +670,13 @@ def main():
                point.AddPoint(point.GetX()+UTMX, point.GetY()+UTMY)
                print("berechne Korrektur")
             else: print("SKIP CORRECTION")
-
-            correctedLat=point.GetX()
-            correctedLon=point.GetY()
-
-            if enable_RTK:
-               point.AddPoint(point.GetX()+RTKX, point.GetY()+RTKY)
-            
-            else: print("SKIP DGPS")
             
 
             #--> Transform back to WGS84
             point.Transform(transformback)
+
+            correctedLat=point.GetX()
+            correctedLon=point.GetY()
          except:
             print("GDAL ERROR...skip")
             continue 
@@ -727,7 +721,7 @@ def main():
                str(compass), 
                str(direction), 
                str(depth), 
-               str(Accuracy),
+               str(accuracy),
                str(BojeLat), str(BojeLon), str(correctedLat), str(correctedLon), str(rover_nmea_obj.latitude), str(rover_nmea_obj.longitude)])
          else:
             sendNMEAtoROV(nmea_str)

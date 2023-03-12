@@ -246,8 +246,8 @@
 
                 hum:"",
                 temp:"",
-                UTMX:"",
- 		        UTMY:"",
+                correction_offset_lon:"",
+                correction_offset_lat:"",
 		        timeboje:"",
             }
         }, 
@@ -265,12 +265,12 @@
                 await axios.get("/v1.0/cGPSPosLon").then(response => {
                     this.GPSData.cGPSPosLon = response.data;
                 })
-                await axios.get("/v1.0/UTMX").then(response => {
-                    this.UTMX = response.data;
+                await axios.get("/v1.0/correction_offset_lon").then(response => {
+                    this.correction_offset_lon = response.data;
                 })
 
-                await axios.get("/v1.0/UTMY").then(response => {
-                    this.UTMY = response.data;
+                await axios.get("/v1.0//correction_offset_lat").then(response => {
+                    this.correction_offset_lat = response.data;
                 })
 
 
