@@ -506,3 +506,14 @@ def main():
         else:
             print("#Correction skipped... something missing here...#")
             sendNMEAtoROV(nmea_str)
+            
+#______________________MAIN LOOP________________________
+def loop():
+    while True:
+        try:
+            main()
+        except Exception as e:
+            print("\nMain Loop Failed: \n" + str(e) + "\n")
+
+thread_Loop = threading.Thread(target=loop, args=(), daemon=True)
+thread_Loop.start()
