@@ -9,7 +9,6 @@ from typing import Any, Dict, Optional
 
 import position_correction as pc
 
-
 class TextData(BaseModel):
     data: str
 
@@ -50,9 +49,6 @@ async def loadData() -> Any:
     return pc.correction_offset_utm.lat
 
 
-
-
-
 # correction Data
 @app.get("/Depth", status_code=status.HTTP_200_OK)
 @version(1, 0)
@@ -83,9 +79,6 @@ async def loadData() -> Any:
 @version(1, 0)
 async def loadData() -> Any:
     return pc.accuracy
-
-
-
 
 
 #DGPS Data
@@ -224,4 +217,4 @@ async def root() -> Any:
         return "index.html"
 
 # Start Webserver
-uvicorn.run(app, host="0.0.0.0", port=81, log_config=None)
+uvicorn.run(app, host="0.0.0.0", port=88, log_config=None)
