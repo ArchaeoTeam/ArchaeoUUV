@@ -142,6 +142,7 @@ def sendNMEAtoROV(nmea):
 
     print("Sending to ROV " + BOOT_IP + ":" + str(BOOT_PORT) + "...")
     sock_boot.sendto(bytes(str(nmea) + "\n", encoding="utf8"), (BOOT_IP, BOOT_PORT))
+    print("Done!")
 
 
 # gives a direction in degree from 2 lat/lon Locations
@@ -220,7 +221,6 @@ def readSerialNMEA(ser):
             print("Disconnect of USB->UART occured")
             correction_possible = False
             return None
-
 
 def recRover():
     global rover_nmea
@@ -347,16 +347,20 @@ def main():
     global accuracy
     global direction
     global prev_direction
+    global correction_possible
 
+    print("Started Main Thread...")
     while True:
         # TODO: Manchmal kommt hier ein None durch, wieso?
         nmea_str = readSerialNMEA(ser)
         if correction_possible:
             print(str(counter) + "\n----------------------------------------")
             print(nmea_str)
-
             try:
                 nmea_obj = pynmea2.parse(nmea_str)
+                if type(nmea_obj) == type(None):
+                    print("nmea_obj NoneType")
+                    continue
             except pynmea2.ParseError as e:
                 print("Parse error: {0}".format(e))
                 continue
@@ -495,8 +499,8 @@ def main():
                         str(boje_position.lon),
                         str(corrected_position.lat),
                         str(corrected_position.lon),
-                        str(rover_nmea.latitude),
-                        str(rover_nmea.longitude),
+                        "None", #TODO: Add this without error
+                        "None",
                     ]
                 )
             else:
