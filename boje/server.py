@@ -177,8 +177,7 @@ async def set(setDGPS: TextData) -> Any:
       print("DGPS an")
    return "ok"
 
-
-
+#TODO: add the option to start a new log
 
 @app.post("/enableCalc", status_code=status.HTTP_200_OK)
 @version(1, 0)
