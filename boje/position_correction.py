@@ -463,7 +463,7 @@ def main():
                             str(nmea_obj.lat_dir),
                             decTodms(point.GetX()),
                             str(nmea_obj.lon_dir),
-                            str(2),  # Fix Type 2 = D-GPS
+                            str(2) if enable_RTK and rtk_possible else str(6),  # Fix Type 2 = D-GPS; 6 = Estimated
                             str(nmea_obj.num_sats),
                             str(nmea_obj.horizontal_dil),
                             str(0),
