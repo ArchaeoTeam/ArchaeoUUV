@@ -390,7 +390,7 @@ def main():
             try:
                 boje_position.lat = nmea_obj.latitude
                 boje_position.lon = nmea_obj.longitude
-
+                print("Boje Lat/Lng: ", boje_position.lat, boje_position.lon)
                 # --> Coordinates to gdal point
                 point.AddPoint(nmea_obj.longitude, nmea_obj.latitude)
 
