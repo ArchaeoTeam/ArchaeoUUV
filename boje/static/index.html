@@ -41,9 +41,9 @@
                                   D-GPS Fix
                               </l-tooltip>
                             </l-marker>
-                            <l-marker :lat-lng="[GPSData.GPSLat, GPSData.GPSLon]" >
+                            <l-marker :lat-lng="[GPSData.GPSLon, GPSData.GPSLat]" >
                               <l-tooltip>
-                                  GPSLat
+                                  GPSRaw
                               </l-tooltip>
                             </l-marker>
                           </l-map>
@@ -67,9 +67,18 @@
                                     </v-list-item-content>
                                 </v-list-item>
                             </v-container>
-                            
-
+                        
                         </v-card>
+                        <v-chip
+                            :color="(correctionPossible) ? 'green' : 'red'"
+                        >
+                        Correction Possible
+                        </v-chip>
+                        <v-chip
+                            :color="(DGPSpossible) ? 'green' : 'red'"
+                        >
+                        DGPS Possible
+                        </v-chip>
                     </v-col>
                 </v-row>
                 <v-row>
@@ -132,13 +141,15 @@
                 GPSData: {
                     GPSLat: "0",
                     GPSLon: "0",
-                    correctedLat: "0",
-                    correctedLon: "0",
+                    CorrectedLat: "0",
+                    CorrectedLon: "0",
                     FixLat: "51.07205984",
                     FixLon: "13.59835664",
                     DGPSLat: "0",
                     DGPSLon: "0",
                 },
+                correctionPossible: true,
+                DGPSpossible: false,
                 Telemetry:{
                     Depth: "0",
                     Lenght: "0",
@@ -161,12 +172,12 @@
                 await axios.get("/v1.0/GPSLon").then(response => {
                     this.GPSData.GPSLon = response.data;
                 })
-                //await axios.get("/v1.0/cGPSPosLat").then(response => {
-                //    this.GPSData.cGPSPosLat = response.data;
-                //})
-                //await axios.get("/v1.0/cGPSPosLon").then(response => {
-                //    this.GPSData.cGPSPosLon = response.data;
-                //})
+                await axios.get("/v1.0/CorrectedLat").then(response => {
+                    this.GPSData.CorrectedLat = response.data;
+                })
+                await axios.get("/v1.0/CorrectedLon").then(response => {
+                    this.GPSData.CorrectedLon = response.data;
+                })
                 //await axios.get("/v1.0/correction_offset_lon").then(response => {
                 //    this.correction_offset_lon = response.data;
                 //})

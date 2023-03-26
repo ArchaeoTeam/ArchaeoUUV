@@ -28,12 +28,12 @@ async def loadData() -> Any:
 async def loadData() -> Any:
     return pc.boje_position.lat
 
-@app.get("/cGPSPosLat", status_code=status.HTTP_200_OK)
+@app.get("/CorrectedLat", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
     return pc.corrected_position.lat
 
-@app.get("/cGPSPosLon", status_code=status.HTTP_200_OK)
+@app.get("/CorrectedLon", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
     return pc.corrected_position.lon
