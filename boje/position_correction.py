@@ -351,6 +351,7 @@ def main():
 
     print("Started Main Thread...")
     while True:
+        correction_possible = True
         # TODO: Manchmal kommt hier ein None durch, wieso?
         nmea_str = readSerialNMEA(ser)
         print(str(counter) + "\n----------------------------------------")
