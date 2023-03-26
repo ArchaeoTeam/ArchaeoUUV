@@ -21,14 +21,12 @@ app = FastAPI(
 @app.get("/GPSLat", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
-    print("GOT REQUEST, SENDING DATA")
-    print (pc.boje_position.lat)
     return pc.boje_position.lat
 
 @app.get("/GPSLon", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
-    return boje_position.lon
+    return pc.boje_position.lat
 
 @app.get("/cGPSPosLat", status_code=status.HTTP_200_OK)
 @version(1, 0)

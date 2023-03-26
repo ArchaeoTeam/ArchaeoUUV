@@ -207,7 +207,6 @@ def readSerialNMEA(ser):
     global correction_possible
 
     while True:
-        print("Boje Lat/Lng: ", boje_position.lat, boje_position.lon)
         try:
             line = ser.readline().decode("ascii", errors="replace")
             if line != None and (
