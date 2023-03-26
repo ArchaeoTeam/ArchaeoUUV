@@ -41,9 +41,10 @@
                                   D-GPS Fix
                               </l-tooltip>
                             </l-marker>
-                            <l-marker :lat-lng="[GPSData.GPSLon, GPSData.GPSLat]" >
+                            <l-marker :lat-lng="[GPSData.GPSLat, GPSData.GPSLon]" >
                               <l-tooltip>
-                                  GPSRaw
+                                    GPSRaw:<br>
+                                  {{GPSData.GPSLon}} {{GPSData.GPSLat}}
                               </l-tooltip>
                             </l-marker>
                           </l-map>
@@ -177,6 +178,12 @@
                 })
                 await axios.get("/v1.0/CorrectedLon").then(response => {
                     this.GPSData.CorrectedLon = response.data;
+                })
+                await axios.get("/v1.0/CorrectionPossible").then(response => {
+                    this.correctionPossible = response.data;
+                })
+                await axios.get("/v1.0/DGPSpossible").then(response => {
+                    this.DGPSpossible = response.data;
                 })
                 //await axios.get("/v1.0/correction_offset_lon").then(response => {
                 //    this.correction_offset_lon = response.data;

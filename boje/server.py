@@ -26,7 +26,7 @@ async def loadData() -> Any:
 @app.get("/GPSLon", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
-    return pc.boje_position.lat
+    return pc.boje_position.lon
 
 @app.get("/CorrectedLat", status_code=status.HTTP_200_OK)
 @version(1, 0)
@@ -37,6 +37,16 @@ async def loadData() -> Any:
 @version(1, 0)
 async def loadData() -> Any:
     return pc.corrected_position.lon
+
+@app.get("/CorrectionPossible", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return pc.correction_possible
+
+@app.get("/DGPSpossible", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return pc.rtk_possible
 
 @app.get("/correction_offset_lon", status_code=status.HTTP_200_OK)
 @version(1, 0)
