@@ -21,6 +21,8 @@ app = FastAPI(
 @app.get("/GPSLat", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
+    print("GOT REQUEST, SENDING DATA")
+    print (boje_position)
     return boje_position.lat
 
 @app.get("/GPSLon", status_code=status.HTTP_200_OK)
