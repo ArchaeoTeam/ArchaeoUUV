@@ -371,6 +371,7 @@ def main():
             if depth > distance:
                 print("skipping bc depth bigger distance...")
                 print("distance=" + str(distance) + "\ndepth=" + str(depth))
+                correction_possible = False
                 csvlogger.info(
                     [
                         nmea_str.rstrip(),

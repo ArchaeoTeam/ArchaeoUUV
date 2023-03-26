@@ -38,16 +38,6 @@ async def loadData() -> Any:
 async def loadData() -> Any:
     return pc.corrected_position.lon
 
-@app.get("/CorrectionPossible", status_code=status.HTTP_200_OK)
-@version(1, 0)
-async def loadData() -> Any:
-    return pc.correction_possible
-
-@app.get("/DGPSpossible", status_code=status.HTTP_200_OK)
-@version(1, 0)
-async def loadData() -> Any:
-    return pc.rtk_possible
-
 @app.get("/correction_offset_lon", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
@@ -58,8 +48,17 @@ async def loadData() -> Any:
 async def loadData() -> Any:
     return pc.correction_offset_utm.lat
 
+@app.get("/CorrectionPossible", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return pc.correction_possible
 
-# correction Data
+@app.get("/DGPSpossible", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+    return pc.rtk_possible
+
+# Telemetry Data
 @app.get("/Depth", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
@@ -70,7 +69,7 @@ async def loadData() -> Any:
 async def loadData() -> Any:
     return pc.distance
 
-@app.get("/Correction", status_code=status.HTTP_200_OK)
+@app.get("/Correction_Offset", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
     return pc.correction_offset

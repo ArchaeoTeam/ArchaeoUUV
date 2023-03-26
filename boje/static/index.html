@@ -43,7 +43,7 @@
                             </l-marker>
                             <l-marker :lat-lng="[GPSData.GPSLat, GPSData.GPSLon]" >
                               <l-tooltip>
-                                  {{"GPSRAW\n"+GPSData.GPSLat + GPSData.GPSLon}}
+                                  {{"GPSRAW <br/>"+GPSData.GPSLat + GPSData.GPSLon}}
                               </l-tooltip>
                             </l-marker>
                           </l-map>
@@ -183,33 +183,25 @@
                 await axios.get("/v1.0/DGPSpossible").then(response => {
                     this.DGPSpossible = response.data;
                 })
-                //await axios.get("/v1.0/correction_offset_lon").then(response => {
-                //    this.correction_offset_lon = response.data;
-                //})
-                //
-                //await axios.get("/v1.0/correction_offset_lat").then(response => {
-                //    this.correction_offset_lat = response.data;
-                //})
-                //
-                //
-                //await axios.get("/v1.0/Depth").then(response => {
-                //    this.Depth = response.data;
-                //})
-                //await axios.get("/v1.0/Lenght").then(response => {
-                //    this.Lenght = response.data;
-                //})
-                //await axios.get("/v1.0/Correction").then(response => {
-                //    this.Correction = response.data;
-                //})
-                //await axios.get("/v1.0/Direction").then(response => {
-                //    this.Direction = response.data;
-                //})
-                //await axios.get("/v1.0/Compass").then(response => {
-                //    this.Comapss = response.data;
-                //})
-                //await axios.get("/v1.0/Accuracy").then(response => {
-                //    this.Accuracy = response.data;
-                //})
+                
+                await axios.get("/v1.0/Depth").then(response => {
+                    this.Depth = response.data;
+                })
+                await axios.get("/v1.0/Lenght").then(response => {
+                    this.Tether_Length = response.data;
+                })
+                await axios.get("/v1.0/Correction").then(response => {
+                    this.Correction_Offset = response.data;
+                })
+                await axios.get("/v1.0/Direction").then(response => {
+                    this.Direction = response.data;
+                })
+                await axios.get("/v1.0/Compass").then(response => {
+                    this.Comapss = response.data;
+                })
+                await axios.get("/v1.0/Accuracy").then(response => {
+                    this.Accuracy = response.data;
+                })
 
 
 
