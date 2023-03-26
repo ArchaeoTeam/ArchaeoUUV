@@ -353,18 +353,21 @@ def main():
     while True:
         # TODO: Manchmal kommt hier ein None durch, wieso?
         nmea_str = readSerialNMEA(ser)
-        if correction_possible:
-            print(str(counter) + "\n----------------------------------------")
-            print(nmea_str)
-            try:
-                nmea_obj = pynmea2.parse(nmea_str)
-                if type(nmea_obj) == type(None):
-                    print("nmea_obj NoneType")
-                    continue
-            except pynmea2.ParseError as e:
-                print("Parse error: {0}".format(e))
+        print(str(counter) + "\n----------------------------------------")
+        print(nmea_str)
+        try:
+            nmea_obj = pynmea2.parse(nmea_str)
+            if type(nmea_obj) == type(None):
+                print("nmea_obj NoneType")
                 continue
-
+        except pynmea2.ParseError as e:
+            print("Parse error: {0}".format(e))
+            continue
+        boje_position = Location(nmea_obj.latitude, nmea_obj.longitude)
+        print("Boje Lat/Lng: ", boje_position.lat, boje_position.lon)
+        
+        # is false if no GGA Message or sensor data is not available
+        if correction_possible:
             ####Calculate Offset with Pythagoras | distance² = depth² + offset²
             if depth > distance:
                 print("skipping bc depth bigger distance...")
@@ -388,9 +391,6 @@ def main():
 
             ####CONVERT TO UTM
             try:
-                boje_position.lat = nmea_obj.latitude
-                boje_position.lon = nmea_obj.longitude
-                print("Boje Lat/Lng: ", boje_position.lat, boje_position.lon)
                 # --> Coordinates to gdal point
                 point.AddPoint(nmea_obj.longitude, nmea_obj.latitude)
 
