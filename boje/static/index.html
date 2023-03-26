@@ -37,14 +37,19 @@
                               name="OpenSatteliteMap"
                             ></l-tile-layer>
                             <l-marker :lat-lng="[GPSData.FixLat, GPSData.FixLon]" draggable>
-                              <l-tooltip>
-                                  D-GPS Fix
-                              </l-tooltip>
+                                <l-tooltip>
+                                    D-GPS Fix
+                                </l-tooltip>
                             </l-marker>
                             <l-marker :lat-lng="[GPSData.GPSLat, GPSData.GPSLon]" >
-                              <l-tooltip>
-                                  {{"GPSRAW <br/>"+GPSData.GPSLat + GPSData.GPSLon}}
-                              </l-tooltip>
+                                <l-tooltip>
+                                    Raw GPS Reading
+                                </l-tooltip>
+                            </l-marker>
+                            <l-marker :lat-lng="[GPSData.CorrectedLat, GPSData.CorrectedLon]" >
+                                <l-tooltip>
+                                    Calculated Position
+                                </l-tooltip>
                             </l-marker>
                           </l-map>
                     </v-col>
@@ -152,8 +157,8 @@
                 DGPSpossible: false,
                 Telemetry:{
                     Depth: "0",
-                    Lenght: "0",
-                    Correction: "0",
+                    Tether_Length: "0",
+                    Correction_Offset: "0",
                     Direction: "0",
                     Comapss: "0",
                     Accuracy: "0",
@@ -185,22 +190,22 @@
                 })
                 
                 await axios.get("/v1.0/Depth").then(response => {
-                    this.Depth = response.data;
+                    this.Telemetry.Depth = response.data;
                 })
                 await axios.get("/v1.0/Lenght").then(response => {
-                    this.Tether_Length = response.data;
+                    this.Telemetry.Tether_Length = response.data;
                 })
                 await axios.get("/v1.0/Correction").then(response => {
-                    this.Correction_Offset = response.data;
+                    this.Telemetry.Correction_Offset = response.data;
                 })
                 await axios.get("/v1.0/Direction").then(response => {
-                    this.Direction = response.data;
+                    this.Telemetry.Direction = response.data;
                 })
                 await axios.get("/v1.0/Compass").then(response => {
-                    this.Comapss = response.data;
+                    this.Telemetry.Comapss = response.data;
                 })
                 await axios.get("/v1.0/Accuracy").then(response => {
-                    this.Accuracy = response.data;
+                    this.Telemetry.Accuracy = response.data;
                 })
 
 
