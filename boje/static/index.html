@@ -43,8 +43,7 @@
                             </l-marker>
                             <l-marker :lat-lng="[GPSData.GPSLat, GPSData.GPSLon]" >
                               <l-tooltip>
-                                    GPSRaw:<br>
-                                  {{GPSData.GPSLon}} {{GPSData.GPSLat}}
+                                  {{"GPSRAW\n"+GPSData.GPSLat + GPSData.GPSLon}}
                               </l-tooltip>
                             </l-marker>
                           </l-map>
@@ -167,7 +166,6 @@
         methods: {
 			async reloadTextFromBackend() {
                 await axios.get("/v1.0/GPSLat").then(response => {
-                    console.log("got GPS Lat",response.data)
                     this.GPSData.GPSLat = response.data;
                 })
                 await axios.get("/v1.0/GPSLon").then(response => {
