@@ -96,7 +96,7 @@ async def loadData() -> Any:
 @app.get("/DGPSposLat", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
-    return pc.dgps_nmea.latitude
+    return pc.dgps_nmea.latitude or 0
 
 @app.get("/DGPSposLon", status_code=status.HTTP_200_OK)
 @version(1, 0)
@@ -198,8 +198,6 @@ async def restart() -> Any:
     os.system("sudo killall python3")
     return "ok"
 
-
-    
 @app.post("/setTime", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def setTime() -> Any:

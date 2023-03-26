@@ -22,149 +22,57 @@
 
 <div id="app">
     <v-app>
+        <v-app-bar app dense>
+            <v-spacer></v-spacer>
+            <v-app-bar-title>Position Dashboard</v-app-bar-title>
+            <v-spacer></v-spacer>
+        </v-app-bar>
         <v-main>
-            <v-container>
-                <div style="height:600px; width:800px">
-                    <l-map ref="map" :zoom="zoom" :center="[DGPSfixLat, DGPSfixLon]">
-                      <l-tile-layer
-                        url='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-                        name="OpenSatteliteMap"
-                      ></l-tile-layer>
-                      <l-marker :lat-lng="[DGPSfixLat, DGPSfixLon]" draggable>
-                        <l-tooltip>
-                            D-GPS Fix
-                        </l-tooltip>
-                      </l-marker>
-                      <l-marker :lat-lng="[GPSLat, GPSLon]" >
-                        <l-tooltip>
-                            GPSLat
-                        </l-tooltip>
-                      </l-marker>
-                      <l-marker :lat-lng="[cGPSPosLat, cGPSPosLon]" >
-                        <l-tooltip>
-                            cGPSPos (Whatever this is bommel)
-                        </l-tooltip>
-                      </l-marker>
-                    </l-map>
-                </div>
-                <h1>GPS-Position</h1>
-                <!-- This card is from  https://vuetifyjs.com/en/components/cards/#outlined -->
-                <br>
+            <v-container fluid>
+                <v-row style="height: 800px;">
+                    <v-col cols="8" style="z-index:0">
+                        <l-map ref="map" :zoom="zoom" :center="[GPSData.FixLat, GPSData.FixLon]">
+                            <l-tile-layer
+                              url='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+                              name="OpenSatteliteMap"
+                            ></l-tile-layer>
+                            <l-marker :lat-lng="[GPSData.FixLat, GPSData.FixLon]" draggable>
+                              <l-tooltip>
+                                  D-GPS Fix
+                              </l-tooltip>
+                            </l-marker>
+                            <l-marker :lat-lng="[GPSData.GPSLat, GPSData.GPSLon]" >
+                              <l-tooltip>
+                                  GPSLat
+                              </l-tooltip>
+                            </l-marker>
+                          </l-map>
+                    </v-col>
+                    <v-col cols="4">
+                        <v-card class="mx-auto" 
+                                outlined>
+                            <v-container>
+                                <v-card-title>Data</v-card-title>
+                                <v-list-item two-line>
+                                    <v-list-item-content>
+                                        <div>{{GPSData}}</div>
+                                        <v-list-item-subtitle>Boje</v-list-item-subtitle>
+                                    </v-list-item-content>
+                                </v-list-item>
+                                <v-divider></v-divider>
+                                <v-list-item two-line>
+                                    <v-list-item-content>
+                                        <div>{{Telemetry}}</div>
+                                        <v-list-item-subtitle>Telemetry</v-list-item-subtitle>
+                                    </v-list-item-content>
+                                </v-list-item>
+                            </v-container>
+                            
+
+                        </v-card>
+                    </v-col>
+                </v-row>
                 <v-row>
-                    <v-card class="mx-auto" 
-                            max-width="200" 
-                            max-height="150" 
-                            outlined>
-                        <b>GPS Lat:</b>
-                        <v-text-field v-model="GPSData.GPSLat">
-                        </v-text-field>
-                    </v-card>
-                    <v-card class="mx-auto" max-width="200" max-height="150" outlined>
-                        <b>GPS Lon:</b>
-                        <v-text-field v-model="GPSData.GPSLon">
-                        </v-text-field>
-                    </v-card>
-                    <v-card class="mx-auto" max-width="200" max-height="150" outlined>
-                        <b>cor GPS Lat:</b>
-                        <v-text-field v-model="GPSData.cGPSPosLat">
-                        </v-text-field>
-                    </v-card>
-                    <v-card class="mx-auto" max-width="200" max-height="150" outlined>
-                        <b>cor GPS Lon:</b>
-                        <v-text-field v-model="GPSData.cGPSPosLon">
-                        </v-text-field>
-                    </v-card>
-                    <v-card class="mx-auto" max-width="200" max-height="150" outlined>
-                        <b>Correction Lat:</b>
-                        <v-text-field v-model="UTMX">
-                        </v-text-field>
-                    </v-card>
-                    <v-card class="mx-auto" max-width="200" max-height="150" outlined>
-                        <b>Correction Lon:</b>
-                        <v-text-field v-model="UTMY">
-                        </v-text-field>
-                    </v-card>
-                </v-row>
-
-                <br>
-                <h1>Data for correction</h1>
-				<br>
-				<v-row>
-
-                    <v-card class="mx-auto" max-width="200" max-height="150" outlined>
-                        <b>Depth:</b>
-                        <v-text-field v-model="Depth">
-                        </v-text-field>
-                    </v-card>
-                    <v-card class="mx-auto" max-width="200" max-height="150" outlined>
-                        <b>Length:</b>
-                        <v-text-field v-model="Lenght">
-                        </v-text-field>
-                    </v-card>
-                    <v-card class="mx-auto" max-width="200" max-height="150" outlined>
-                        <b>Correction:</b>
-                        <v-text-field v-model="Correction">
-                        </v-text-field>
-                    </v-card>
-                    <v-card class="mx-auto" max-width="200" max-height="150" outlined>
-                        <b>Direction:</b>
-                        <v-text-field v-model="Direction">
-                        </v-text-field>
-                    </v-card>
-                    <v-card class="mx-auto" max-width="200" max-height="150" outlined>
-                        <b>Accuracy:</b>
-                        <v-text-field v-model="Accuracy">
-                        </v-text-field>
-                    </v-card>
-                    <v-card class="mx-auto" max-width="200" max-height="150" outlined>
-                        <b>Compass ROV:</b>
-                        <v-text-field v-model="Compass">
-                        </v-text-field>
-                    </v-card>
-                </v-row>
-				<br> 
-                <h1>DGPS Positions</h1>
-                <br>
-				<v-row>
-                    <v-card class="mx-auto" max-width="300" max-height="150" outlined>
-                        <b>DGPS Pos Lat</b>
-                        <v-text-field v-model="DGPSposLat">
-                        </v-text-field>
-                    </v-card>
-                    <v-card class="mx-auto" max-width="300" max-height="150" outlined>
-                        <b>DGPS Pos Lon</b>
-                        <v-text-field v-model="DGPSposLon">
-                        </v-text-field>
-                    </v-card>
-                    
-                    <v-card class="mx-auto" max-width="300" max-height="150" outlined>
-                        <b>DGPS Fix Lat</b>
-                        <v-text-field v-model="DGPSfixLat">
-                        </v-text-field>
-                        <v-btn outlined rounded text @click="setDPGS()">
-                            Set
-                         </v-btn>
-                    </v-card>
-                    <v-card class="mx-auto" max-width="300" max-height="150" outlined>
-                        <b>DGPS Fix Lon</b>
-                        <v-text-field v-model="DGPSfixLon">
-                        </v-text-field>
-                    </v-card>
-                    <v-card class="mx-auto" max-width="300" max-height="150" outlined>
-                        <b>DGPS corr Lat</b>
-                        <v-text-field v-model="DGPScorrX">
-                        </v-text-field>
-                    </v-card>
-                    <v-card class="mx-auto" max-width="300" max-height="150" outlined>
-                        <b>DGPS corr Lon</b>
-                        <v-text-field v-model="DGPScorrY">
-                        </v-text-field>
-                    </v-card>
-                </v-row>
-                <br> 
-				<h1>Time</h1>
-                <br> 
-				<v-row>
 					<v-card class="mx-auto" max-width="300" max-height="250" outlined>
                         <b>Time</b>
                         <v-text-field v-model="timeBoje">
@@ -180,13 +88,13 @@
 
                     <v-card class="mx-auto" max-width="150" max-height="250" outlined>
                         <b>Temperatur</b>
-                        <v-text-field v-model="temp">
+                        <v-text-field v-model="Telemetry.Temperature">
                         </v-text-field>
                     </v-card>
 
                     <v-card class="mx-auto" max-width="150" max-height="250" outlined>
                         <b>Humidity</b>
-                        <v-text-field v-model="hum">
+                        <v-text-field v-model="Telemetry.Humidity">
                         </v-text-field>
                     </v-card>
 				</v-row>	
@@ -224,131 +132,117 @@
                 GPSData: {
                     GPSLat: "0",
                     GPSLon: "0",
-                    cGPSPosLat: "0",
-                    cGPSPosLon: "0",
-                    dGPSPos: "0",
+                    correctedLat: "0",
+                    correctedLon: "0",
+                    FixLat: "51.07205984",
+                    FixLon: "13.59835664",
+                    DGPSLat: "0",
+                    DGPSLon: "0",
                 },
-                
-
-                Depth: "0",
-                Lenght: "0",
-                Correction: "0",
-                Direction: "",
-                Comapss: "",
-                Accuracy: "",
-                
-                DGPSposLat: "",
-                DGPSposLon: "",
-                DGPSfixLat: "51.07205984",
-                DGPSfixLon: "13.59835664",
-                DGPScorrX: "",
-                DGPScorrY: "",
-
-                hum:"",
-                temp:"",
-                correction_offset_lon:"",
-                correction_offset_lat:"",
+                Telemetry:{
+                    Depth: "0",
+                    Lenght: "0",
+                    Correction: "0",
+                    Direction: "0",
+                    Comapss: "0",
+                    Accuracy: "0",
+                    Humidity:"0",
+                    Temperature:"0",
+                },
 		        timeboje:"",
             }
         }, 
         methods: {
 			async reloadTextFromBackend() {
                 await axios.get("/v1.0/GPSLat").then(response => {
+                    console.log("got GPS Lat",response.data)
                     this.GPSData.GPSLat = response.data;
                 })
                 await axios.get("/v1.0/GPSLon").then(response => {
                     this.GPSData.GPSLon = response.data;
                 })
-                await axios.get("/v1.0/cGPSPosLat").then(response => {
-                    this.GPSData.cGPSPosLat = response.data;
-                })
-                await axios.get("/v1.0/cGPSPosLon").then(response => {
-                    this.GPSData.cGPSPosLon = response.data;
-                })
-                await axios.get("/v1.0/correction_offset_lon").then(response => {
-                    this.correction_offset_lon = response.data;
-                })
-
-                await axios.get("/v1.0/correction_offset_lat").then(response => {
-                    this.correction_offset_lat = response.data;
-                })
-
-
-                await axios.get("/v1.0/Depth").then(response => {
-                    this.Depth = response.data;
-                })
-                await axios.get("/v1.0/Lenght").then(response => {
-                    this.Lenght = response.data;
-                })
-                await axios.get("/v1.0/Correction").then(response => {
-                    this.Correction = response.data;
-                })
-                await axios.get("/v1.0/Direction").then(response => {
-                    this.Direction = response.data;
-                })
-                await axios.get("/v1.0/Compass").then(response => {
-                    this.Comapss = response.data;
-                })
-                await axios.get("/v1.0/Accuracy").then(response => {
-                    this.Accuracy = response.data;
-                })
-
-
+                //await axios.get("/v1.0/cGPSPosLat").then(response => {
+                //    this.GPSData.cGPSPosLat = response.data;
+                //})
+                //await axios.get("/v1.0/cGPSPosLon").then(response => {
+                //    this.GPSData.cGPSPosLon = response.data;
+                //})
+                //await axios.get("/v1.0/correction_offset_lon").then(response => {
+                //    this.correction_offset_lon = response.data;
+                //})
+//
+                //await axios.get("/v1.0/correction_offset_lat").then(response => {
+                //    this.correction_offset_lat = response.data;
+                //})
+//
+//
+                //await axios.get("/v1.0/Depth").then(response => {
+                //    this.Depth = response.data;
+                //})
+                //await axios.get("/v1.0/Lenght").then(response => {
+                //    this.Lenght = response.data;
+                //})
+                //await axios.get("/v1.0/Correction").then(response => {
+                //    this.Correction = response.data;
+                //})
+                //await axios.get("/v1.0/Direction").then(response => {
+                //    this.Direction = response.data;
+                //})
+                //await axios.get("/v1.0/Compass").then(response => {
+                //    this.Comapss = response.data;
+                //})
+                //await axios.get("/v1.0/Accuracy").then(response => {
+                //    this.Accuracy = response.data;
+                //})
 
 
-                await axios.get("/v1.0/DGPSposLat").then(response => {
-                    this.DGPSposLat = response.data;
-                })
-                await axios.get("/v1.0/DGPSposLon").then(response => {
-                    this.DGPSposLon = response.data;
-                })
-                await axios.get("/v1.0/DGPScorrX").then(response => {
-                    this.DGPScorrX = response.data;
-                })
-                await axios.get("/v1.0/DGPScorrY").then(response => {
-                    this.DGPScorrY = response.data;
-                })
 
 
-                await axios.get("/v1.0/GetTime").then(response => {
-                    this.timeBoje = response.data;
-                })
-
-                await axios.get("/v1.0/GetTemp").then(response => {
-                    this.temp = response.data;
-                })
-
-                await axios.get("/v1.0/GetHum").then(response => {
-                    this.hum = response.data;
-                })
+                //await axios.get("/v1.0/DGPSposLat").then(response => {
+                //    this.DGPSposLat = response.data;
+                //})
+                //await axios.get("/v1.0/DGPSposLon").then(response => {
+                //    this.DGPSposLon = response.data;
+                //})
+                //await axios.get("/v1.0/DGPScorrX").then(response => {
+                //    this.DGPScorrX = response.data;
+                //})
+                //await axios.get("/v1.0/DGPScorrY").then(response => {
+                //    this.DGPScorrY = response.data;
+                //})
+//
+//
+                //await axios.get("/v1.0/GetTime").then(response => {
+                //    this.timeBoje = response.data;
+                //})
+//
+                //await axios.get("/v1.0/GetTemp").then(response => {
+                //    this.temp = response.data;
+                //})
+//
+                //await axios.get("/v1.0/GetHum").then(response => {
+                //    this.hum = response.data;
+                //})
 
             },
             async loadTextFromBackend() {
                 await axios.get("/v1.0/DGPSfixLat").then(response => {
-                    this.DGPSfixLat = response.data;
+                    this.GPSData.FixLat = response.data;
                 })
                 await axios.get("/v1.0/DGPSfixLon").then(response => {
-                    this.DGPSfixLon = response.data;
+                    this.GPSData.FixLon = response.data;
                 })
             },
 
-            timer() {
-                 this.interval = setInterval(() => this.reloadTextFromBackend(), 2000);
-            },
-
-            async saveTextToBackend() {
-                axios.post('/v1.0/save_calib_turbidity', {
-                    data: this.turbidity_calib_value,
-                })
-            },
             async setDPGS() {
                 await axios.post('/v1.0/setDGPSLat', {
-                    data: this.DGPSfixLat,
+                    data: this.GPSData.FixLat,
                 })
                 await axios.post('/v1.0/setDGPSLon', {
-                    data: this.DGPSfixLon,
+                    data: this.GPSData.FixLon,
                 })
             },
+
             async enableDGPS(value) {
                 await axios.post('/v1.0/enableDGPS', {
                     data: value,
@@ -360,18 +254,18 @@
                 })
             },
 
-
             async restart() {
-                await axios.post('/v1.0/restart', {
-                    
-                })
+                await axios.post('/v1.0/restart', {})
             },            
 
             async setTime() {
-                await axios.post('/v1.0/setTime', {
-                    
-                })
-            }
+                await axios.post('/v1.0/setTime', {})
+            },
+
+            
+            timer() {
+                this.interval = setInterval(() => this.reloadTextFromBackend(), 2000);
+            },
         },
         mounted() {
             this.loadTextFromBackend()
