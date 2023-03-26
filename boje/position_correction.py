@@ -207,6 +207,7 @@ def readSerialNMEA(ser):
     global correction_possible
 
     while True:
+        print("Boje Lat/Lng: ", boje_position.lat, boje_position.lon)
         try:
             line = ser.readline().decode("ascii", errors="replace")
             if line != None and (
@@ -364,7 +365,6 @@ def main():
             print("Parse error: {0}".format(e))
             continue
         boje_position = Location(nmea_obj.latitude, nmea_obj.longitude)
-        print("Boje Lat/Lng: ", boje_position.lat, boje_position.lon)
         
         # is false if no GGA Message or sensor data is not available
         if correction_possible:

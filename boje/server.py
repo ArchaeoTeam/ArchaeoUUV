@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from typing import Any, Dict, Optional
 
 import position_correction as pc
-from position_correction import boje_position
+
 class TextData(BaseModel):
     data: str
 
@@ -22,8 +22,8 @@ app = FastAPI(
 @version(1, 0)
 async def loadData() -> Any:
     print("GOT REQUEST, SENDING DATA")
-    print (boje_position.lat)
-    return boje_position.lat
+    print (pc.boje_position.lat)
+    return pc.boje_position.lat
 
 @app.get("/GPSLon", status_code=status.HTTP_200_OK)
 @version(1, 0)
