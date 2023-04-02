@@ -23,9 +23,30 @@
 <div id="app">
     <v-app>
         <v-app-bar app dense>
+            <v-row style="position: absolute; left: 2%">
+                {{timeBoje}}
+                <v-tooltip>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn small icon @click="setTime()" class="mx-3">
+                            <v-icon>mdi-send-clock</v-icon>
+                        </v-btn>
+                    </template>
+                    <span>Send Time to ROV</span>
+                </v-tooltip>
+            </v-row>
             <v-spacer></v-spacer>
             <v-app-bar-title>Position Dashboard</v-app-bar-title>
             <v-spacer></v-spacer>
+            <v-row align="center" style="position: absolute; right: 2%">
+                <v-icon>mdi-thermometer</v-icon>
+                <v-col>
+                    {{Telemetry.Temperature + '°C'}}
+                </v-col>
+                <v-icon>mdi-water-percent</v-icon>
+                <v-col>
+                    {{Telemetry.Humidity + '%'}}
+                </v-col>
+            </v-row>
         </v-app-bar>
         <v-main>
             <v-container fluid>
@@ -51,7 +72,7 @@
                                     Calculated Position
                                 </l-tooltip>
                             </l-marker>
-                          </l-map>
+                        </l-map>
                     </v-col>
                     <v-col cols="4">
                         <v-card class="mx-auto" 
@@ -60,57 +81,112 @@
                                 <v-card-title>Data</v-card-title>
                                 <v-list-item two-line>
                                     <v-list-item-content>
-                                        <div>{{GPSData}}</div>
+                                        <v-row class="text-h6">
+                                            <v-col >{{GPSData.GPSLat}}</v-col>
+                                            <v-col>{{GPSData.GPSLon}}</v-col>
+                                        </v-row>
                                         <v-list-item-subtitle>Boje</v-list-item-subtitle>
                                     </v-list-item-content>
                                 </v-list-item>
-                                <v-divider></v-divider>
+                                <v-divider class="ma-5"></v-divider>
                                 <v-list-item two-line>
                                     <v-list-item-content>
-                                        <div>{{Telemetry}}</div>
-                                        <v-list-item-subtitle>Telemetry</v-list-item-subtitle>
+                                        <v-row class="text-h6">
+                                            <v-col>{{GPSData.CorrectedLat}}</v-col>
+                                            <v-col>{{GPSData.CorrectedLon}}</v-col>
+                                        </v-row>
+                                        <v-list-item-subtitle>Corrected Position</v-list-item-subtitle>
                                     </v-list-item-content>
                                 </v-list-item>
+                                <v-divider class="ma-5"></v-divider>
+                                <v-list-item two-line>
+                                    <v-list-item-content>
+                                        <v-row>
+                                            <v-col cols="5"><v-text-field v-model="GPSData.FixLat" hint="Latitude" dense/></v-col>
+                                            <v-col cols="5"><v-text-field v-model="GPSData.FixLon" hint="Longitude" dense/></v-col>
+                                            <v-col cols="2">
+                                                <v-btn small icon @click="setDPGS()">
+                                                    <v-icon>mdi-send</v-icon>
+                                                </v-btn>
+                                            </v-col>
+                                        </v-row>
+                                        <v-list-item-subtitle>Fix</v-list-item-subtitle>
+                                    </v-list-item-content>
+                                </v-list-item>
+                                <v-col class="">
+                                    <v-divider></v-divider>
+                                    <v-divider></v-divider>
+                                </v-col>
+                                <v-list-item two-line>
+                                    <v-row>
+                                        <v-list-item-content>
+                                            <v-col class="text-h6">{{Telemetry.Depth}}</v-col>
+                                            <v-list-item-subtitle>Depth</v-list-item-subtitle>
+                                        </v-list-item-content>
+                                        <v-list-item-content>
+                                            <v-col class="text-h6">{{Telemetry.Tether_Length}}</v-col>
+                                            <v-list-item-subtitle>Tether Length</v-list-item-subtitle>
+                                        </v-list-item-content>
+                                    </v-row>
+                                </v-list-item>
+                                <v-divider class="ma-5"></v-divider>
+                                <v-list-item two-line>
+                                    <v-row>
+                                        <v-list-item-content>
+                                            <v-col class="text-h6">{{Telemetry.Direction}}</v-col>
+                                            <v-list-item-subtitle>Direction</v-list-item-subtitle>
+                                        </v-list-item-content>
+                                        <v-list-item-content>
+                                            <v-col class="text-h6">{{Telemetry.Compass}}</v-col>
+                                            <v-list-item-subtitle>Compass</v-list-item-subtitle>
+                                        </v-list-item-content>
+                                    </v-row>
+                                </v-list-item>
+                                <v-divider class="ma-5"></v-divider>
+                                <v-list-item two-line>
+                                    <v-row>
+                                        <v-list-item-content>
+                                            <v-col class="text-h6">{{Telemetry.Depth}}</v-col>
+                                            <v-list-item-subtitle>Depth</v-list-item-subtitle>
+                                        </v-list-item-content>
+                                        <v-list-item-content>
+                                            <v-col class="text-h6">{{Telemetry.Tether_Length}}</v-col>
+                                            <v-list-item-subtitle>Tether Length</v-list-item-subtitle>
+                                        </v-list-item-content>
+                                    </v-row>
+                                </v-list-item>
                             </v-container>
-                        
                         </v-card>
-                        <v-chip
-                            :color="(correctionPossible) ? 'green' : 'red'"
-                        >
-                        Correction Possible
-                        </v-chip>
-                        <v-chip
-                            :color="(DGPSpossible) ? 'green' : 'red'"
-                        >
-                        DGPS Possible
-                        </v-chip>
+                        <v-card class="mx-auto" outlined>
+                            <v-col>
+                                <v-col>
+                                    <v-row class="align-center">
+                                        <v-col cols="7">
+                                            <v-switch v-model="correctionEnabled" @change="enableDGPS(correctionEnabled)" color="success" inset :label="`Correction`"></v-switch>  
+                                        </v-col>
+                                        <v-col cols="5">
+                                            <v-chip :color="(correctionPossible) ? 'green' : 'red'" >Possible</v-chip>
+                                        </v-col>
+                                    </v-row>
+                                    <v-row class="align-center">
+                                        <v-col cols="7">
+                                            <v-switch v-model="DGPSenabled" @change="enableCalc(DGPSenabled)" color="success" inset :label="`D-GPS`"></v-switch>
+                                        </v-col>
+                                        <v-col cols="5">
+                                            <v-chip :color="(DGPSpossible) ? 'green' : 'red'">Possible</v-chip>
+                                        </v-col>
+                                    </v-row>
+                                </v-col>
+                                <v-divider class="my-2"></v-divider>
+                                <v-btn color="red" outlined rounded text @click="restart()">   Restart Script    </v-btn>
+                            </v-col>
+                            
+                        </v-card>
                     </v-col>
                 </v-row>
                 <v-row>
-					<v-card class="mx-auto" max-width="300" max-height="250" outlined>
-                        <b>Time</b>
-                        <v-text-field v-model="timeBoje">
-                        </v-text-field>
-                        <v-btn outlined rounded text @click="setTime()">   Send Time to UUV  </v-btn>
-                    </v-card>
-                    <v-card class="mx-auto" max-width="300" outlined>
-                        <v-btn color="red" outlined rounded text @click="restart()">   Restart Script    </v-btn>
-                        <br><br>
-                        <v-btn color="red" outlined rounded text @click="enableDGPS(0)">   D DGPS  </v-btn><v-btn color="green" outlined rounded text @click="enableDGPS(1)">   E DGPS  </v-btn><br><br>
-                        <v-btn color="red" outlined rounded text @click="enableCalc(0)">   D Calc  </v-btn><v-btn color="green" outlined rounded text @click="enableCalc(1)">   E Calc  </v-btn>
-                    </v-card>
-
-                    <v-card class="mx-auto" max-width="150" max-height="250" outlined>
-                        <b>Temperatur</b>
-                        <v-text-field v-model="Telemetry.Temperature">
-                        </v-text-field>
-                    </v-card>
-
-                    <v-card class="mx-auto" max-width="150" max-height="250" outlined>
-                        <b>Humidity</b>
-                        <v-text-field v-model="Telemetry.Humidity">
-                        </v-text-field>
-                    </v-card>
+					
+                    
 				</v-row>	
             </v-container>
         </v-main>
@@ -153,19 +229,22 @@
                     DGPSLat: "0",
                     DGPSLon: "0",
                 },
+                correctionEnabled: true,
                 correctionPossible: true,
+                DGPSenabled: false,
                 DGPSpossible: false,
+
                 Telemetry:{
                     Depth: "0",
                     Tether_Length: "0",
                     Correction_Offset: "0",
                     Direction: "0",
-                    Comapss: "0",
+                    Compass: "0",
                     Accuracy: "0",
                     Humidity:"0",
                     Temperature:"0",
                 },
-		        timeboje:"",
+		        timeBoje:"00:00:00",
             }
         }, 
         methods: {
@@ -182,6 +261,13 @@
                 await axios.get("/v1.0/CorrectedLon").then(response => {
                     this.GPSData.CorrectedLon = response.data;
                 })
+                await axios.get("/v1.0/DGPSLat").then(response => {
+                    this.GPSData.DGPSLat = response.data;
+                })
+                await axios.get("/v1.0/DGPSLon").then(response => {
+                    this.GPSData.DGPSLon = response.data;
+                })
+
                 await axios.get("/v1.0/CorrectionPossible").then(response => {
                     this.correctionPossible = response.data;
                 })
@@ -202,52 +288,36 @@
                     this.Telemetry.Direction = response.data;
                 })
                 await axios.get("/v1.0/Compass").then(response => {
-                    this.Telemetry.Comapss = response.data;
+                    this.Telemetry.Compass = response.data;
                 })
                 await axios.get("/v1.0/Accuracy").then(response => {
                     this.Telemetry.Accuracy = response.data;
                 })
 
+                await axios.get("/v1.0/GetTime").then(response => {
+                    this.timeBoje = response.data;
+                })
 
+                await axios.get("/v1.0/GetTemp").then(response => {
+                    this.temp = response.data;
+                })
 
-
-                //await axios.get("/v1.0/DGPSposLat").then(response => {
-                //    this.DGPSposLat = response.data;
-                //})
-                //await axios.get("/v1.0/DGPSposLon").then(response => {
-                //    this.DGPSposLon = response.data;
-                //})
-                //await axios.get("/v1.0/DGPScorrX").then(response => {
-                //    this.DGPScorrX = response.data;
-                //})
-                //await axios.get("/v1.0/DGPScorrY").then(response => {
-                //    this.DGPScorrY = response.data;
-                //})
-//
-//
-                //await axios.get("/v1.0/GetTime").then(response => {
-                //    this.timeBoje = response.data;
-                //})
-//
-                //await axios.get("/v1.0/GetTemp").then(response => {
-                //    this.temp = response.data;
-                //})
-//
-                //await axios.get("/v1.0/GetHum").then(response => {
-                //    this.hum = response.data;
-                //})
-
+                await axios.get("/v1.0/GetHum").then(response => {
+                    this.hum = response.data;
+                })
             },
             async loadTextFromBackend() {
-                await axios.get("/v1.0/DGPSfixLat").then(response => {
+                await axios.get("/v1.0/FixLat").then(response => {
                     this.GPSData.FixLat = response.data;
                 })
-                await axios.get("/v1.0/DGPSfixLon").then(response => {
+                await axios.get("/v1.0/FixLon").then(response => {
                     this.GPSData.FixLon = response.data;
                 })
             },
 
             async setDPGS() {
+
+
                 await axios.post('/v1.0/setDGPSLat', {
                     data: this.GPSData.FixLat,
                 })

@@ -1,4 +1,4 @@
-import datetime
+import os, datetime
 import uvicorn
 from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI, HTTPException, status
@@ -11,6 +11,9 @@ import position_correction as pc
 
 class TextData(BaseModel):
     data: str
+    
+class BoolData(BaseModel):
+    data: bool
 
 app = FastAPI(
     title="GPS_Calc",
@@ -90,45 +93,11 @@ async def loadData() -> Any:
     return pc.accuracy
 
 
-#DGPS Data
-@app.get("/DGPSfixLat", status_code=status.HTTP_200_OK)
-@version(1, 0)
-async def loadData() -> Any:
-   #print("data")
-   return pc.fix_point.lat
-
-@app.get("/DGPSfixLon", status_code=status.HTTP_200_OK)
-@version(1, 0)
-async def loadData() -> Any:
-    return pc.fix_point.lon
-
-@app.get("/DGPSposLat", status_code=status.HTTP_200_OK)
-@version(1, 0)
-async def loadData() -> Any:
-    return pc.dgps_nmea.latitude or 0
-
-@app.get("/DGPSposLon", status_code=status.HTTP_200_OK)
-@version(1, 0)
-async def loadData() -> Any:
-    return pc.dgps_nmea.longitude
-
-@app.get("/DGPScorrX", status_code=status.HTTP_200_OK)
-@version(1, 0)
-async def loadData() -> Any:
-    return pc.DGPSpoint.GetX()
-
-@app.get("/DGPScorrY", status_code=status.HTTP_200_OK)
-@version(1, 0)
-async def loadData() -> Any:
-    return pc.DGPSpoint.GetY()
-
-
 @app.get("/GetTime", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
    x=datetime.datetime.now().strftime("%H:%M:%S  on  %d.%m.%Y")
    return str(x)
-
 
 @app.get("/GetTemp", status_code=status.HTTP_200_OK)
 @version(1, 0)
@@ -159,46 +128,48 @@ async def loadData() -> Any:
    return str(enable_correction)
 
 
-@app.post("/setDGPSLat", status_code=status.HTTP_200_OK)
+@app.get("/getFixLat", status_code=status.HTTP_200_OK)
 @version(1, 0)
-async def setData(setDGPSLat: TextData) -> Any:
-    pc.fix_point.lat=setDGPSLat.data
+async def loadData() -> Any:
+   return pc.fix_point.lat
+
+@app.get("/getFixLon", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def loadData() -> Any:
+   return pc.fix_point.lon
+
+@app.post("/setFixLat", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def setData(FixLat: TextData) -> Any:
+    pc.fix_point.lat=FixLat.data
     print("FIXLAT=",pc.fix_point.lat)
     return "ok"
 
-@app.post("/setDGPSLon", status_code=status.HTTP_200_OK)
+@app.post("/setFixLon", status_code=status.HTTP_200_OK)
 @version(1, 0)
-async def setData(setDGPSLon: TextData) -> Any:
-    pc.fix_point.lon=str(setDGPSLon.data)
+async def setData(FixLon: TextData) -> Any:
+    pc.fix_point.lon=str(FixLon.data)
     print("FIXLON=",FIXLON)
     return "ok"
 
 
 @app.post("/enableDGPS", status_code=status.HTTP_200_OK)
 @version(1, 0)
-async def set(setDGPS: TextData) -> Any:
+async def set(setDGPS: BoolData) -> Any:
    global enable_RTK
-   if int(setDGPS.data) == 0:
-      enable_RTK = False
-      print("DGPS aus")
-   else:
-      enable_RTK = True
-      print("DGPS an")
+   enable_RTK = setDGPS.data
+   print("###DGPS  ",enable_RTK)
    return "ok"
 
 #TODO: add the option to start a new log
 
 @app.post("/enableCalc", status_code=status.HTTP_200_OK)
 @version(1, 0)
-async def enableCalc(setDGPS: TextData) -> Any:
-   global enable_correction
-   if int(setDGPS.data) == 0:
-      enable_correction=False
-      print("corr aus")
-   else:
-      enable_correction=True
-      print("corr an")
-   return "ok"
+async def enableCalc(setCorrection: BoolData) -> Any:
+    global enable_correction
+    enable_correction = setCorrection.data
+    print("###Correction  ",enable_correction)
+    return "ok"
 
 @app.post("/restart", status_code=status.HTTP_200_OK)
 @version(1, 0)
