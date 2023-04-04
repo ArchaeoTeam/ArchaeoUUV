@@ -97,6 +97,7 @@ async def loadData() -> Any:
 @version(1, 0)
 async def loadData() -> Any:
    x=datetime.datetime.now().strftime("%H:%M:%S  on  %d.%m.%Y")
+   print("TIME IS"+str(x))
    return str(x)
 
 @app.get("/GetTemp", status_code=status.HTTP_200_OK)
