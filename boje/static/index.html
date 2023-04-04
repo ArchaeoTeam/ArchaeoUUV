@@ -249,13 +249,13 @@
                 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                     maxZoom: 20,
                 }).addTo(map);
-                this.markerFix = L.marker([this.GPSData.FixLat, this.GPSData.FixLon]).addTo(map);
+                this.markerFix = L.marker([this.GPSData.FixLat, this.GPSData.FixLon]).addTo(map).bindTooltip("Hello").openTooltip(),;
             },
             setMarkers(){
                 this.markerFix = L.marker([this.GPSData.FixLat, this.GPSData.FixLon]).addTo(map);
             },
 			async reloadTextFromBackend() {
-                await axios.get("/GPSLat").then(response => {
+                await axios.get("/v1.0/GPSLat").then(response => {
                     this.GPSData.GPSLat = response.data;
                 })
                 await axios.get("/v1.0/GPSLon").then(response => {
