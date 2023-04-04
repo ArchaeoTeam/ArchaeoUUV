@@ -51,49 +51,26 @@
         <v-main>
             <v-container fluid>
                 <v-row style="height: 800px;">
-                    <v-col cols="8" style="z-index:0">
-                        <l-map ref="map" :zoom="zoom" :center="[GPSData.FixLat, GPSData.FixLon]">
-                            <l-tile-layer
-                              url='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-                              name="OpenSatteliteMap"
-                            ></l-tile-layer>
-                            <l-marker :lat-lng="[GPSData.FixLat, GPSData.FixLon]" draggable>
-                                <l-tooltip>
-                                    D-GPS Fix
-                                </l-tooltip>
-                            </l-marker>
-                            <l-marker :lat-lng="[GPSData.GPSLat, GPSData.GPSLon]" >
-                                <l-tooltip>
-                                    Raw GPS Reading
-                                </l-tooltip>
-                            </l-marker>
-                            <l-marker :lat-lng="[GPSData.CorrectedLat, GPSData.CorrectedLon]" >
-                                <l-tooltip>
-                                    Calculated Position
-                                </l-tooltip>
-                            </l-marker>
-                        </l-map>
-                    </v-col>
+                    <v-col id="map" cols="8" style="z-index:0"></v-col>
                     <v-col cols="4">
-                        <v-card class="mx-auto" 
+                        <v-card class="mx-auto flex-nowrap py-0" 
                                 outlined>
                             <v-container>
-                                <v-card-title>Data</v-card-title>
                                 <v-list-item two-line>
                                     <v-list-item-content>
-                                        <v-row class="text-h6">
-                                            <v-col >{{GPSData.GPSLat}}</v-col>
-                                            <v-col>{{GPSData.GPSLon}}</v-col>
+                                        <v-row class="text-h6 flex-nowrap">
+                                            <v-col >{{GPSData.GPSLat.slice(0,9)}}</v-col>
+                                            <v-col>{{GPSData.GPSLon.slice(0,9)}}</v-col>
                                         </v-row>
                                         <v-list-item-subtitle>Boje</v-list-item-subtitle>
                                     </v-list-item-content>
                                 </v-list-item>
-                                <v-divider class="ma-5"></v-divider>
+                                <v-divider class="ma-3"></v-divider>
                                 <v-list-item two-line>
                                     <v-list-item-content>
-                                        <v-row class="text-h6">
-                                            <v-col>{{GPSData.CorrectedLat}}</v-col>
-                                            <v-col>{{GPSData.CorrectedLon}}</v-col>
+                                        <v-row class="text-h6 flex-nowrap">
+                                            <v-col>{{GPSData.CorrectedLat.slice(0,9)}}</v-col>
+                                            <v-col>{{GPSData.CorrectedLon.slice(0,9)}}</v-col>
                                         </v-row>
                                         <v-list-item-subtitle>Corrected Position</v-list-item-subtitle>
                                     </v-list-item-content>
@@ -113,7 +90,7 @@
                                         <v-list-item-subtitle>Fix</v-list-item-subtitle>
                                     </v-list-item-content>
                                 </v-list-item>
-                                <v-col class="">
+                                <v-col>
                                     <v-divider></v-divider>
                                     <v-divider></v-divider>
                                 </v-col>
@@ -158,14 +135,27 @@
                             </v-container>
                         </v-card>
                         <v-card class="mx-auto" outlined>
-                            <v-col>
-                                <v-col>
-                                    <v-row class="align-center">
+                            <v-row justify="space-around">
+                                <v-switch v-model="correctionEnabled" @change="enableDGPS(correctionEnabled)" color="success" inset :label="`Correction`"></v-switch>
+                                <v-icon v-if="correctionPossible" color="green"/>mdi-check-circle</v-icon>
+                                <v-icon v-else color="red" />mdi-close-circle</v-icon>    
+                                <v-divider vertical class="ma-2"></v-divider>
+                                <v-switch v-model="DGPSenabled" @change="enableCalc(DGPSenabled)" color="success" inset :label="`D-GPS`"></v-switch>
+                                <v-icon v-if="DGPSpossible" color="green"/>mdi-check-circle</v-icon>
+                                <v-icon v-else color="red" />mdi-close-circle</v-icon>
+
+                            </v-row>
+                            <v-divider class="my-2"></v-divider>
+                            <v-btn color="red" outlined rounded text @click="restart()">Restart Script</v-btn>
+                            <!-- <v-col class="py-0">
+                                <v-row justify="start">
+                                    <v-row class="align-center py-0">
                                         <v-col cols="7">
                                             <v-switch v-model="correctionEnabled" @change="enableDGPS(correctionEnabled)" color="success" inset :label="`Correction`"></v-switch>  
                                         </v-col>
                                         <v-col cols="5">
-                                            <v-chip :color="(correctionPossible) ? 'green' : 'red'" >Possible</v-chip>
+                                            <v-icon v-if="correctionPossible" color="green"/>mdi-check-circle</v-icon>
+                                            <v-icon v-else color="red" />mdi-close-circle</v-icon>
                                         </v-col>
                                     </v-row>
                                     <v-row class="align-center">
@@ -173,14 +163,14 @@
                                             <v-switch v-model="DGPSenabled" @change="enableCalc(DGPSenabled)" color="success" inset :label="`D-GPS`"></v-switch>
                                         </v-col>
                                         <v-col cols="5">
-                                            <v-chip :color="(DGPSpossible) ? 'green' : 'red'">Possible</v-chip>
+                                            <v-icon v-if="DGPSpossible" color="green"/>mdi-check-circle</v-icon>
+                                            <v-icon v-else color="red" />mdi-close-circle</v-icon>
                                         </v-col>
                                     </v-row>
-                                </v-col>
+                                </v-row>
                                 <v-divider class="my-2"></v-divider>
                                 <v-btn color="red" outlined rounded text @click="restart()">   Restart Script    </v-btn>
-                            </v-col>
-                            
+                            </v-col> -->
                         </v-card>
                     </v-col>
                 </v-row>
@@ -200,6 +190,7 @@
 <script src="/js/vue2-leaflet.min.js"></script>
 
 <script>
+    
     Vue.config.devtools = true;
     new Vue({
         el: '#app',
@@ -208,12 +199,12 @@
             'l-map': window.Vue2Leaflet.LMap,
             'l-tile-layer': window.Vue2Leaflet.LTileLayer,
             'l-marker': window.Vue2Leaflet.LMarker,
-            'l-control-layers': window.Vue2Leaflet.LControlLayers,
             'l-tooltip': window.Vue2Leaflet.LTooltip,
-            'l-popup': window.Vue2Leaflet.LPopup,
-            'l-polyline': window.Vue2Leaflet.LPolyline,
-            'l-polygon': window.Vue2Leaflet.LPolygon,
-            'l-rectangle': window.Vue2Leaflet.LRectangle,
+            //'l-control-layers': window.Vue2Leaflet.LControlLayers,
+            //'l-popup': window.Vue2Leaflet.LPopup,
+            //'l-polyline': window.Vue2Leaflet.LPolyline,
+            //'l-polygon': window.Vue2Leaflet.LPolygon,
+            //'l-rectangle': window.Vue2Leaflet.LRectangle,
         },
         data() {
             return {
@@ -245,9 +236,24 @@
                     Temperature:"0",
                 },
 		        timeBoje:"00:00:00",
+                
+                markerFix: null,
+                markerGPS: null,
+                markerCorrected: null,
+                map: null,
             }
         }, 
         methods: {
+            initMap(){
+                map = L.map('map').setView([this.GPSData.FixLat, this.GPSData.FixLon], 18);
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    maxZoom: 20,
+                }).addTo(map);
+                this.markerFix = L.marker([this.GPSData.FixLat, this.GPSData.FixLon]).addTo(map);
+            },
+            setMarkers(){
+                this.markerFix = L.marker([this.GPSData.FixLat, this.GPSData.FixLon]).addTo(map);
+            },
 			async reloadTextFromBackend() {
                 await axios.get("/v1.0/GPSLat").then(response => {
                     this.GPSData.GPSLat = response.data;
@@ -305,6 +311,12 @@
                 await axios.get("/v1.0/GetHum").then(response => {
                     this.hum = response.data;
                 })
+
+                if(GPSData.FixLat != "0" && GPSData.FixLon != "0"){
+                    this.markerFix = L.marker([GPSData.FixLat, GPSData.FixLon], {icon: this.iconFix}).addTo(this.map);
+                }
+
+                setMarkers();
             },
             async loadTextFromBackend() {
                 await axios.get("/v1.0/FixLat").then(response => {
@@ -350,10 +362,28 @@
             },
         },
         mounted() {
+            this.initMap()
             this.loadTextFromBackend()
             this.timer()
+            
         }
     })
 </script>
 
+
+<!-- <l-marker :lat-lng="[GPSData.FixLat, GPSData.FixLon]" draggable>
+    <l-tooltip>
+        D-GPS Fix
+    </l-tooltip>
+</l-marker>
+<l-marker :lat-lng="[GPSData.GPSLat, GPSData.GPSLon]" >
+    <l-tooltip>
+        Raw GPS Reading
+    </l-tooltip>
+</l-marker>
+<l-marker :lat-lng="[GPSData.CorrectedLat, GPSData.CorrectedLon]" >
+    <l-tooltip>
+        Calculated Position
+    </l-tooltip>
+</l-marker> -->
 </html>
