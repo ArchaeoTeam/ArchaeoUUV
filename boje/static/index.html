@@ -255,7 +255,7 @@
                 this.markerFix = L.marker([this.GPSData.FixLat, this.GPSData.FixLon]).addTo(map);
             },
 			async reloadTextFromBackend() {
-                await axios.get("/v1.0/GPSLat").then(response => {
+                await axios.get("/GPSLat").then(response => {
                     this.GPSData.GPSLat = response.data;
                 })
                 await axios.get("/v1.0/GPSLon").then(response => {

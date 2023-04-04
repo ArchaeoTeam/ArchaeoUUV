@@ -22,7 +22,6 @@ app = FastAPI(
 
 # GPS Data
 @app.get("/GPSLat", status_code=status.HTTP_200_OK)
-@version(1, 0)
 async def loadData() -> Any:
     return pc.boje_position.lat
 
