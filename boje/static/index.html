@@ -59,8 +59,8 @@
                                 <v-list-item two-line>
                                     <v-list-item-content>
                                         <v-row class="text-h6 flex-nowrap">
-                                            <v-col >{{(GPSData.GPSLat).slice(0,9)}}</v-col>
-                                            <v-col>{{(GPSData.GPSLon).slice(0,9)}}</v-col>
+                                            <v-col >{{GPSData.GPSLat.toFixed(6)}}</v-col>
+                                            <v-col>{{GPSData.GPSLon.toFixed(6)}}</v-col>
                                         </v-row>
                                         <v-list-item-subtitle>Boje</v-list-item-subtitle>
                                     </v-list-item-content>
@@ -69,8 +69,8 @@
                                 <v-list-item two-line>
                                     <v-list-item-content>
                                         <v-row class="text-h6 flex-nowrap">
-                                            <v-col>{{GPSData.CorrectedLat.slice(0,9)}}</v-col>
-                                            <v-col>{{GPSData.CorrectedLon.slice(0,9)}}</v-col>
+                                            <v-col>{{GPSData.CorrectedLat.toFixed(6)}}</v-col>
+                                            <v-col>{{GPSData.CorrectedLon.toFixed(6)}}</v-col>
                                         </v-row>
                                         <v-list-item-subtitle>Corrected Position</v-list-item-subtitle>
                                     </v-list-item-content>
@@ -97,11 +97,11 @@
                                 <v-list-item two-line>
                                     <v-row>
                                         <v-list-item-content>
-                                            <v-col class="text-h6">{{Telemetry.Depth}}</v-col>
+                                            <v-col class="text-h6">{{Telemetry.Depth}} m</v-col>
                                             <v-list-item-subtitle>Depth</v-list-item-subtitle>
                                         </v-list-item-content>
                                         <v-list-item-content>
-                                            <v-col class="text-h6">{{Telemetry.Tether_Length}}</v-col>
+                                            <v-col class="text-h6">{{Telemetry.Tether_Length.toFixed(3)}} m</v-col>
                                             <v-list-item-subtitle>Tether Length</v-list-item-subtitle>
                                         </v-list-item-content>
                                     </v-row>
@@ -110,11 +110,11 @@
                                 <v-list-item two-line>
                                     <v-row>
                                         <v-list-item-content>
-                                            <v-col class="text-h6">{{Telemetry.Direction}}</v-col>
+                                            <v-col class="text-h6">{{Telemetry.Direction}}°</v-col>
                                             <v-list-item-subtitle>Direction</v-list-item-subtitle>
                                         </v-list-item-content>
                                         <v-list-item-content>
-                                            <v-col class="text-h6">{{Telemetry.Compass}}</v-col>
+                                            <v-col class="text-h6">{{Telemetry.Compass}}°</v-col>
                                             <v-list-item-subtitle>Compass</v-list-item-subtitle>
                                         </v-list-item-content>
                                     </v-row>
@@ -123,12 +123,12 @@
                                 <v-list-item two-line>
                                     <v-row>
                                         <v-list-item-content>
-                                            <v-col class="text-h6">{{Telemetry.Depth}}</v-col>
-                                            <v-list-item-subtitle>Depth</v-list-item-subtitle>
+                                            <v-col class="text-h6">{{Telemetry.Correction_Offset.toFixed(3)}} m</v-col>
+                                            <v-list-item-subtitle>Correction-Offset</v-list-item-subtitle>
                                         </v-list-item-content>
                                         <v-list-item-content>
-                                            <v-col class="text-h6">{{Telemetry.Tether_Length}}</v-col>
-                                            <v-list-item-subtitle>Tether Length</v-list-item-subtitle>
+                                            <v-col class="text-h6">{{Telemetry.Accuracy.toFixed(3)}} m</v-col>
+                                            <v-list-item-subtitle>Accuracy</v-list-item-subtitle>
                                         </v-list-item-content>
                                     </v-row>
                                 </v-list-item>
@@ -147,30 +147,10 @@
                             </v-row>
                             <v-divider class="my-2"></v-divider>
                             <v-btn color="red" outlined rounded text @click="restart()">Restart Script</v-btn>
-                            <!-- <v-col class="py-0">
-                                <v-row justify="start">
-                                    <v-row class="align-center py-0">
-                                        <v-col cols="7">
-                                            <v-switch v-model="correctionEnabled" @change="enableDGPS(correctionEnabled)" color="success" inset :label="`Correction`"></v-switch>  
-                                        </v-col>
-                                        <v-col cols="5">
-                                            <v-icon v-if="correctionPossible" color="green"/>mdi-check-circle</v-icon>
-                                            <v-icon v-else color="red" />mdi-close-circle</v-icon>
-                                        </v-col>
-                                    </v-row>
-                                    <v-row class="align-center">
-                                        <v-col cols="7">
-                                            <v-switch v-model="DGPSenabled" @change="enableCalc(DGPSenabled)" color="success" inset :label="`D-GPS`"></v-switch>
-                                        </v-col>
-                                        <v-col cols="5">
-                                            <v-icon v-if="DGPSpossible" color="green"/>mdi-check-circle</v-icon>
-                                            <v-icon v-else color="red" />mdi-close-circle</v-icon>
-                                        </v-col>
-                                    </v-row>
-                                </v-row>
-                                <v-divider class="my-2"></v-divider>
-                                <v-btn color="red" outlined rounded text @click="restart()">   Restart Script    </v-btn>
-                            </v-col> -->
+                            <v-btn color="primary" outlined rounded text @click="start_log()">Start Logging</v-btn>
+                            <v-btn outlined rounded text @click="show_logs()">
+                                <v-icon>mdi-format-list-numbered</v-icon>
+                            </v-btn>
                         </v-card>
                     </v-col>
                 </v-row>
@@ -211,14 +191,14 @@
                 zoom: 21,
 
                 GPSData: {
-                    GPSLat: "0",
-                    GPSLon: "0",
-                    CorrectedLat: "0",
-                    CorrectedLon: "0",
-                    FixLat: "51.07205984",
-                    FixLon: "13.59835664",
-                    DGPSLat: "0",
-                    DGPSLon: "0",
+                    GPSLat: 0,
+                    GPSLon: 0,
+                    CorrectedLat: 0,
+                    CorrectedLon: 0,
+                    FixLat: 0,
+                    FixLon: 0,
+                    DGPSLat: 0,
+                    DGPSLon: 0,
                 },
                 correctionEnabled: true,
                 correctionPossible: true,
@@ -226,14 +206,14 @@
                 DGPSpossible: false,
 
                 Telemetry:{
-                    Depth: "0",
-                    Tether_Length: "0",
-                    Correction_Offset: "0",
-                    Direction: "0",
-                    Compass: "0",
-                    Accuracy: "0",
-                    Humidity:"0",
-                    Temperature:"0",
+                    Depth: 0,
+                    Tether_Length: 0,
+                    Correction_Offset: 0,
+                    Direction: 0,
+                    Compass: 0,
+                    Accuracy: 0,
+                    Humidity:0,
+                    Temperature:0,
                 },
 		        timeBoje:"00:00:00",
                 
@@ -241,6 +221,27 @@
                 markerGPS: null,
                 markerCorrected: null,
                 map: null,
+                BojeIcon: L.icon({
+                    iconUrl: '/css/images/boje.png', // Replace with your icon's URL
+                    iconSize: [16, 16], // Set the size of your icon (width, height)
+                    iconAnchor: [8, 8], // The coordinates of the "tip" of the icon (in this case, the center of the bottom edge)
+                    popupAnchor: [0, -20], // The coordinates of the point from which popups will "open" relative to the iconAnchor
+                    opacity: 0.5 // Set the opacity value (0 to 1) for your icon
+                }),
+                BootIcon: L.icon({
+                    iconUrl: '/css/images/ROV.png', // Replace with your icon's URL
+                    iconSize: [26, 38], // Set the size of your icon (width, height)
+                    iconAnchor: [13, 19], // The coordinates of the "tip" of the icon (in this case, the center of the bottom edge)
+                    popupAnchor: [0, -30], // The coordinates of the point from which popups will "open" relative to the iconAnchor
+                    opacity: 0.5 // Set the opacity value (0 to 1) for your icon
+                }),
+                FixIcon: L.icon({
+                    iconUrl: '/css/images/rtk.png', // Replace with your icon's URL
+                    iconSize: [26, 26], // Set the size of your icon (width, height)
+                    iconAnchor: [13, 13], // The coordinates of the "tip" of the icon (in this case, the center of the bottom edge)
+                    popupAnchor: [0, -30], // The coordinates of the point from which popups will "open" relative to the iconAnchor
+                    opacity: 0.5 // Set the opacity value (0 to 1) for your icon
+                })
             }
         }, 
         methods: {
@@ -249,10 +250,21 @@
                 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                     maxZoom: 20,
                 }).addTo(map);
-                this.markerFix = L.marker([this.GPSData.FixLat, this.GPSData.FixLon]).addTo(map).bindTooltip("Hello").openTooltip()
+                this.markerFix = L.marker([this.GPSData.FixLat, this.GPSData.FixLon],{ icon: this.FixIcon, opacity:0.7 }).addTo(map).bindTooltip("Fix")
+                this.markerGPS = L.marker([0,0],{ icon: this.BojeIcon, opacity:0.7 }).addTo(map).bindTooltip("Boje")
+                this.markerCorrected = L.marker([0,0],{ icon: this.BootIcon, opacity:0.7 }).addTo(map).bindTooltip("Corrected")
+
             },
             setMarkers(){
-                this.markerFix = L.marker([this.GPSData.FixLat, this.GPSData.FixLon]).addTo(map);
+                this.markerFix.setLatLng([this.GPSData.FixLat, this.GPSData.FixLon]);
+                this.markerGPS.setLatLng([this.GPSData.GPSLat, this.GPSData.GPSLon]);
+                this.markerCorrected.setLatLng([this.GPSData.CorrectedLat, this.GPSData.CorrectedLon]);
+            },
+            setCorrection(){
+
+            },
+            setDGPS(){
+
             },
 			async reloadTextFromBackend() {
                 await axios.get("/v1.0/GPSLat").then(response => {
@@ -267,13 +279,12 @@
                 await axios.get("/v1.0/CorrectedLon").then(response => {
                     this.GPSData.CorrectedLon = response.data;
                 })
-                await axios.get("/v1.0/DGPSLat").then(response => {
-                    this.GPSData.DGPSLat = response.data;
-                })
-                await axios.get("/v1.0/DGPSLon").then(response => {
-                    this.GPSData.DGPSLon = response.data;
-                })
-
+               // await axios.get("/v1.0/DGPSLat").then(response => {
+               //     this.GPSData.DGPSLat = response.data;
+               // })
+               // await axios.get("/v1.0/DGPSLon").then(response => {
+               //     this.GPSData.DGPSLon = response.data;
+               // })
                 await axios.get("/v1.0/CorrectionPossible").then(response => {
                     this.correctionPossible = response.data;
                 })
@@ -287,9 +298,9 @@
                 await axios.get("/v1.0/Lenght").then(response => {
                     this.Telemetry.Tether_Length = response.data;
                 })
-                await axios.get("/v1.0/Correction").then(response => {
-                    this.Telemetry.Correction_Offset = response.data;
-                })
+                 await axios.get("/v1.0/Correction_Offset").then(response => {
+                     this.Telemetry.Correction_Offset = response.data;
+                 })
                 await axios.get("/v1.0/Direction").then(response => {
                     this.Telemetry.Direction = response.data;
                 })
@@ -312,18 +323,23 @@
                     this.hum = response.data;
                 })
 
-                if(GPSData.FixLat != "0" && GPSData.FixLon != "0"){
-                    this.markerFix = L.marker([GPSData.FixLat, GPSData.FixLon], {icon: this.iconFix}).addTo(this.map);
-                }
-
-                setMarkers();
+                this.setMarkers();
             },
             async loadTextFromBackend() {
-                await axios.get("/v1.0/FixLat").then(response => {
+                await axios.get("/v1.0/getFixLat").then(response => {
                     this.GPSData.FixLat = response.data;
                 })
-                await axios.get("/v1.0/FixLon").then(response => {
+                await axios.get("/v1.0/getFixLon").then(response => {
                     this.GPSData.FixLon = response.data;
+                })
+                if(this.GPSData.FixLon != 0 && this.GPSData.FixLat != 0){
+                    this.initMap()
+                }
+                await axios.get("/v1.0/getCorrectionEnabled").then(response => {
+                    this.correctionEnabled
+                })
+                await axios.get("/v1.0/getDGPSenabled").then(response => {
+                    this.DGPSenabled = response.data;
                 })
             },
 
@@ -357,15 +373,18 @@
                 await axios.post('/v1.0/setTime', {})
             },
 
-            timer() {
-                this.interval = setInterval(() => this.reloadTextFromBackend(), 2000);
-            },
+            //timer() {
+            //    this.interval = setInterval(() => this.reloadTextFromBackend(), 2000);
+            //},
         },
         mounted() {
-            this.initMap()
             this.loadTextFromBackend()
-            this.timer()
+            //this.timer()
             
+        },
+        updated(){
+            this.reloadTextFromBackend()
+            this.setMarkers()
         }
     })
 </script>

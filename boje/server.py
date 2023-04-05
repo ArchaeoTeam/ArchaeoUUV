@@ -97,7 +97,6 @@ async def loadData() -> Any:
 @version(1, 0)
 async def loadData() -> Any:
    x=datetime.datetime.now().strftime("%H:%M:%S  on  %d.%m.%Y")
-   print("TIME IS"+str(x))
    return str(x)
 
 @app.get("/GetTemp", status_code=status.HTTP_200_OK)
@@ -115,14 +114,14 @@ async def loadData() -> Any:
    return str(x)
 
 enableRTK = pc.enable_RTK
-@app.get("/GetDGPS", status_code=status.HTTP_200_OK)
+@app.get("/getDGPSenabled", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
    global enable_RTK
    return str(enable_RTK)
 
 enable_correction = pc.enable_correction
-@app.get("/Getcorr", status_code=status.HTTP_200_OK)
+@app.get("/getCorrectionEnabled", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
    global enable_correction
