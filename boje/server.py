@@ -198,7 +198,7 @@ async def setTime() -> Any:
 @app.post("/newLog", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def newLog() -> Any:
-    with open("./logs/Experiment_times.txt", "a") as f:
+    with open("./logs/"+time.strftime("%Y%m%d")+"/Experiment_times.txt", "a") as f:
         dt = time.strftime("%Y%m%d-%H%M%S")
         # Write the datetime to the file
         f.write(f"{dt}\n")
