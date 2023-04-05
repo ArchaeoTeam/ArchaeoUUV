@@ -148,9 +148,21 @@
                             <v-divider class="my-2"></v-divider>
                             <v-btn color="red" outlined rounded text @click="restart()">Restart Script</v-btn>
                             <v-btn color="primary" outlined rounded text @click="newLog()">Start Logging</v-btn>
-                            <v-btn outlined rounded text @click="show_logs()">
-                                <v-icon>mdi-format-list-numbered</v-icon>
-                            </v-btn>
+                            <v-menu top :offset-y="offset">
+                                <template v-slot:activator="{ on, attrs }"></template>
+                                    <v-btn outlined rounded text @click="show_logs()">
+                                        <v-icon>mdi-format-list-numbered</v-icon>
+                                    </v-btn>
+                                </template>
+                                <v-list>
+                                    <v-list-item
+                                      v-for="(item, index) in logList"
+                                      :key="index"
+                                    >
+                                      <v-list-item-title>{{ item }}</v-list-item-title>
+                                    </v-list-item>
+                                </v-list>
+                            </v-menu>
                         </v-card>
                     </v-col>
                 </v-row>
@@ -216,6 +228,7 @@
                     Temperature:0,
                 },
 		        timeBoje:"00:00:00",
+                logList: [],
                 
                 markerFix: null,
                 markerGPS: null,
@@ -263,7 +276,7 @@
 
             async show_logs(){
                 await axios.get("/v1.0/getLogs").then(response => {
-                    this.log_list = response.data;
+                    this.logList = response.data.split('\n');
                 })
             },
 			async reloadTextFromBackend() {

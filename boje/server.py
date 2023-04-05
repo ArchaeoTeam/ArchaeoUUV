@@ -142,8 +142,10 @@ async def loadData() -> Any:
 @version(1, 0)
 async def getLogs() -> Any:
    # TODO: return lsit of all files in ./logs/ seperated by \n
-   loglist = ""
-   return loglist
+   # time.strftime("%Y%m%d")
+   files = os.listdir("./logs/"+time.strftime("%Y%m%d"))
+   log_files_str = "\n".join(files)
+   return log_files_str
 
 ######### SETTER
 @app.post("/setFixLat", status_code=status.HTTP_200_OK)

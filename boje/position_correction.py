@@ -88,7 +88,7 @@ BOOT_PORT = 27000
 sock_boot = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # Internet  # UDP
 
 # LOGGING
-log_filepath = "logs/GNSS_" + time.strftime("%Y%m%d-%H%M%S") + ".csv"
+log_filepath = "logs/"+time.strftime("%Y%m%d")+"/GNSS_" + time.strftime("%Y%m%d-%H%M%S") + ".csv"
 delimiter = ";"
 header = [
     "date",
