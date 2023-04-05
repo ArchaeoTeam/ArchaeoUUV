@@ -202,6 +202,7 @@ async def newLog() -> Any:
         f.write(f"{dt}\n")
 
     pc.startNewLog()
+    print("### Starting new log")
     return "ok"
 
 app = VersionedFastAPI(app, version="1.0.0", prefix_format="/v{major}.{minor}", enable_latest=True)
