@@ -82,7 +82,7 @@
                                             <v-col cols="5"><v-text-field v-model="GPSData.FixLat" hint="Latitude" dense/></v-col>
                                             <v-col cols="5"><v-text-field v-model="GPSData.FixLon" hint="Longitude" dense/></v-col>
                                             <v-col cols="2">
-                                                <v-btn small icon @click="setDPGS()">
+                                                <v-btn small icon @click="setFix()">
                                                     <v-icon>mdi-send</v-icon>
                                                 </v-btn>
                                             </v-col>
@@ -136,18 +136,18 @@
                         </v-card>
                         <v-card class="mx-auto" outlined>
                             <v-row justify="space-around">
-                                <v-switch v-model="correctionEnabled" @change="enableDGPS(correctionEnabled)" color="success" inset :label="`Correction`"></v-switch>
+                                <v-switch v-model="correctionEnabled" @change="setCorrection(correctionEnabled)" color="success" inset :label="`Correction`"></v-switch>
                                 <v-icon v-if="correctionPossible" color="green"/>mdi-check-circle</v-icon>
                                 <v-icon v-else color="red" />mdi-close-circle</v-icon>    
                                 <v-divider vertical class="ma-2"></v-divider>
-                                <v-switch v-model="DGPSenabled" @change="enableCalc(DGPSenabled)" color="success" inset :label="`D-GPS`"></v-switch>
+                                <v-switch v-model="DGPSenabled" @change="setDGPS(DGPSenabled)" color="success" inset :label="`D-GPS`"></v-switch>
                                 <v-icon v-if="DGPSpossible" color="green"/>mdi-check-circle</v-icon>
                                 <v-icon v-else color="red" />mdi-close-circle</v-icon>
 
                             </v-row>
                             <v-divider class="my-2"></v-divider>
                             <v-btn color="red" outlined rounded text @click="restart()">Restart Script</v-btn>
-                            <v-btn color="primary" outlined rounded text @click="start_log()">Start Logging</v-btn>
+                            <v-btn color="primary" outlined rounded text @click="newLog()">Start Logging</v-btn>
                             <v-btn outlined rounded text @click="show_logs()">
                                 <v-icon>mdi-format-list-numbered</v-icon>
                             </v-btn>
@@ -260,11 +260,11 @@
                 this.markerGPS.setLatLng([this.GPSData.GPSLat, this.GPSData.GPSLon]);
                 this.markerCorrected.setLatLng([this.GPSData.CorrectedLat, this.GPSData.CorrectedLon]);
             },
-            setCorrection(){
 
-            },
-            setDGPS(){
-
+            async show_logs(){
+                await axios.get("/v1.0/getLogs").then(response => {
+                    this.log_list = response.data;
+                })
             },
 			async reloadTextFromBackend() {
                 await axios.get("/v1.0/GPSLat").then(response => {
@@ -311,15 +311,15 @@
                     this.Telemetry.Accuracy = response.data;
                 })
 
-                await axios.get("/v1.0/GetTime").then(response => {
+                await axios.get("/v1.0/getTime").then(response => {
                     this.timeBoje = response.data;
                 })
 
-                await axios.get("/v1.0/GetTemp").then(response => {
+                await axios.get("/v1.0/getTemp").then(response => {
                     this.temp = response.data;
                 })
 
-                await axios.get("/v1.0/GetHum").then(response => {
+                await axios.get("/v1.0/getHum").then(response => {
                     this.hum = response.data;
                 })
 
@@ -343,9 +343,7 @@
                 })
             },
 
-            async setDPGS() {
-
-
+            async setFix() {
                 await axios.post('/v1.0/setDGPSLat', {
                     data: this.GPSData.FixLat,
                 })
@@ -354,17 +352,19 @@
                 })
             },
 
-            async enableDGPS(value) {
-                await axios.post('/v1.0/enableDGPS', {
-                    data: value,
-                })
-            },
-            async enableCalc(value) {
+            async setCorrection(){
                 await axios.post('/v1.0/enableCalc', {
                     data: value,
                 })
             },
-
+            async setDGPS(){
+                await axios.post('/v1.0/enableDGPS', {
+                    data: value,
+                })
+            },
+            async newLog(){
+                await axios.post('/v1.0/newLog', {})
+            },
             async restart() {
                 await axios.post('/v1.0/restart', {})
             },            

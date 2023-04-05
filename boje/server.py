@@ -1,4 +1,4 @@
-import os, datetime
+import os, datetime, time
 import uvicorn
 from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI, HTTPException, status
@@ -20,7 +20,7 @@ app = FastAPI(
     description="GPS_Calc",
 )
 
-# GPS Data
+######### GETTER
 @app.get("/GPSLat", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
@@ -93,20 +93,20 @@ async def loadData() -> Any:
     return pc.accuracy
 
 
-@app.get("/GetTime", status_code=status.HTTP_200_OK)
+@app.get("/getTime", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
    x=datetime.datetime.now().strftime("%H:%M:%S  on  %d.%m.%Y")
    return str(x)
 
-@app.get("/GetTemp", status_code=status.HTTP_200_OK)
+@app.get("/getTemp", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
    x=round(pc.htu.read_temperature(),1)
    #print("T=",x)
    return str(x)
 
-@app.get("/GetHum", status_code=status.HTTP_200_OK)
+@app.get("/getHum", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def loadData() -> Any:
    x=round(pc.htu.read_humidity(),1)
@@ -138,6 +138,14 @@ async def loadData() -> Any:
 async def loadData() -> Any:
    return pc.fix_point.lon
 
+@app.get("/getLogs", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def getLogs() -> Any:
+   # TODO: return lsit of all files in ./logs/ seperated by \n
+   loglist = ""
+   return loglist
+
+######### SETTER
 @app.post("/setFixLat", status_code=status.HTTP_200_OK)
 @version(1, 0)
 async def setData(FixLat: TextData) -> Any:
@@ -183,6 +191,17 @@ async def restart() -> Any:
 async def setTime() -> Any:
     print("Zeit synchronisieren")
     os.system("./timesync.sh")
+    return "ok"
+
+@app.post("/newLog", status_code=status.HTTP_200_OK)
+@version(1, 0)
+async def newLog() -> Any:
+    with open("./logs/Experiment_times.txt", "a") as f:
+        dt = time.strftime("%Y%m%d-%H%M%S")
+        # Write the datetime to the file
+        f.write(f"{dt}\n")
+
+    pc.startNewLog()
     return "ok"
 
 app = VersionedFastAPI(app, version="1.0.0", prefix_format="/v{major}.{minor}", enable_latest=True)

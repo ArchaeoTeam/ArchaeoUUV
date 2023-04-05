@@ -26,12 +26,10 @@ transformback = CoordinateTransformation(target, source)
 point = Geometry(wkbPoint)
 DGPSpoint = Geometry(wkbPoint)
 
-
 class Location:
     def __init__(self, lat, lon):
         self.lat = lat
         self.lon = lon
-
 
 htu = HTU21()
 # ENCODER CONSTANTS
@@ -103,7 +101,8 @@ header = [
     "depth",
     "accuracy",
     "DGPS+possible",
-    "Correction+possible" "BojeLat",
+    "Correction+possible", 
+    "BojeLat",
     "BojeLng",
     "CoorectLat",
     "CorrectLng",
@@ -119,6 +118,17 @@ csvlogger = CsvLogger(
     header=header,
 )
 
+def startNewLog():
+    global csvlogger
+    
+    csvlogger = CsvLogger(
+    filename=log_filepath+"_manual",
+    delimiter=delimiter,
+    max_files=5,
+    fmt="%(asctime)s.%(msecs)03d;%(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    header=header,
+)
 
 def decTodms(deg):
     d = int(deg)
@@ -375,13 +385,23 @@ def main():
                 correction_possible = False
                 csvlogger.info(
                     [
-                        nmea_str.rstrip(),
-                        "dist-depth-error",
-                        0,
-                        distance,
-                        rov_compass,
-                        depth,
-                        accuracy,
+                        nmea_str.rstrip(),  #  'NMEA_boje',
+                        "#COR SKIPPED: depth>dist#",  #  'NMEA_corrected',
+                        str(rover_nmea),  #  'NMEA_RTK',
+                        str(distance),  #  'tether_length',
+                        str(rov_compass),  #  'compass_boot',
+                        str(direction),  #  'move_direction',
+                        str(depth),  #  'depth',
+                        str(accuracy),  #  'accuracy',
+                        str(enable_RTK) + "+" + str(rtk_possible),  #  'DGPS+possible'
+                        str(enable_correction) + "+" + str(correction_possible),  # ,'Correction+possible'
+                        #  'BojeLat','BojeLng','CoorectLat','CorrectLng','RTKLat','RTKLon']
+                        str(boje_position.lat),
+                        str(boje_position.lon),
+                        "",
+                        "",
+                        "None", #TODO: Add this without error
+                        "None",
                     ]
                 )
                 sendNMEAtoROV(nmea_obj)
@@ -492,9 +512,7 @@ def main():
                         str(depth),  #  'depth',
                         str(accuracy),  #  'accuracy',
                         str(enable_RTK) + "+" + str(rtk_possible),  #  'DGPS+possible'
-                        str(enable_correction)
-                        + "+"
-                        + str(correction_possible),  # ,'Correction+possible'
+                        str(enable_correction) + "+" + str(correction_possible),  # ,'Correction+possible'
                         #  'BojeLat','BojeLng','CoorectLat','CorrectLng','RTKLat','RTKLon']
                         str(boje_position.lat),
                         str(boje_position.lon),
