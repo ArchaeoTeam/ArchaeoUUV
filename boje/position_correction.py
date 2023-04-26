@@ -122,7 +122,7 @@ def startNewLog():
     global csvlogger
     
     csvlogger = CsvLogger(
-    filename=log_filepath+"_manual",
+    filename="manual_"+log_filepath,
     delimiter=delimiter,
     max_files=5,
     fmt="%(asctime)s.%(msecs)03d;%(message)s",
