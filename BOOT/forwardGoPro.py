@@ -8,7 +8,7 @@ import psutil
 
 usb_interface=psutil.net_if_addrs()["usb0"][0]
 if usb_interface == None:
-    print("GoPro not connected properly! No usb0 interface")
+    print("bip bip bop bop")
     sys.exit()
 
 GOPRO_IP = usb_interface.address [:-1] + "1"
