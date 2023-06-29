@@ -196,7 +196,7 @@ class MM:
                 tds_calib2 = float(f.read())
                 f=open(turbidity_calib_file2, "r")
                 turbidity_calib2 = float(f.read())
-                list_o2.append(o2_ble_value*o2_calib+o2_calib2)
+                list_o2.append(chan0.voltage*o2_calib+o2_calib2)
                 list_tds.append(chan1.voltage*tds_calib+tds_calib2)
                 list_ph.append(chan2.voltage*ph_calib+ph_calib2)
                 list_turbidity.append(chan3.voltage*turbidity_calib+turbidity_calib2)
@@ -237,7 +237,7 @@ class MM:
 
                     #Logoutput
                     print(str(round(list[0][0],3)), str(round(list[1][0],3)), str(round(list[2][0],3)), str(round(list[3][0],3)))                   
-                    self.send_sensors_to_mavlink(round(list[0][0],3),round(list[1][0],3),round(list[2][0],3),round(list[3][0],3))
+                    self.send_sensors_to_mavlink(o2_ble_value,round(list[1][0],3),round(list[2][0],3),round(list[3][0],3))
                     list=[],[],[],[] 
                     #print("Daten geschrieben")
                     #self.send_statustext("TEST")
