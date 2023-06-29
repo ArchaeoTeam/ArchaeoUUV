@@ -237,6 +237,7 @@ class MM:
                     value = data[0] * 256 + data[1]
                     if value > 0x7FF:
                         value -= 0x1000
+                    print(value)
                     voltage[channel] = value * 4.096 / 2047
                 
                 list_o2.append(channel[0]*o2_calib+o2_calib2)
