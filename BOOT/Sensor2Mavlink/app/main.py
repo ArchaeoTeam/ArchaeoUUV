@@ -238,7 +238,7 @@ class MM:
                     if value > 0x7FF:
                         value -= 0x1000
                     print(value)
-                    voltage[channel] = value * 4.096 / 2047
+                    voltage = value * 4.096 / 2047
                 
                 list_o2.append(channel[0]*o2_calib+o2_calib2)
                 list_tds.append(channel[1].voltage*tds_calib+tds_calib2)
