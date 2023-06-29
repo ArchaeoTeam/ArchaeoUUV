@@ -231,6 +231,8 @@ class MM:
                 turbidity_calib2 = float(f.read())
                 
                 for channel in range(4):
+                    bus = SMBus(6)
+                    ads_address= 0x48
                     config = [(0x84 | (channel << 4)), 0x83]
                     bus.write_i2c_block_data(ads_address, 0x01, config)
                     
