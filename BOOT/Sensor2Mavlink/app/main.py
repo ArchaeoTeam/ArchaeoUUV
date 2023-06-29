@@ -587,10 +587,12 @@ async def save_o2_calib_file2(data: TextData) -> Any:
 async def setChamber(chamber: TextData) -> Any:
     print("Entnehme Probe aus der Kammer ",chamber.data)
     if int(chamber.data) == 1:
+        test.send_statustext("Probe Eins wird genommen")
         GPIO.output(16, False)
         time.sleep(3)
         GPIO.output(16, True)
     if int(chamber.data) == 2:
+        test.send_statustext("Probe Zwei wird genommen")
         GPIO.output(20, False)
         GPIO.output(16, False)
         time.sleep(3)
@@ -611,8 +613,10 @@ async def setGoPro(chamber: TextData) -> Any:
     print("Entnehme Probe aus der Kammer ",chamber.data)
     if int(chamber.data) == 1:
         GPIO.output(14, True)
+        test.send_statustext("GoPros An")
     if int(chamber.data) == 0:
         GPIO.output(14, False)
+        test.send_statustext("GoPros Aus")
     return "ok"
 
 @app.post("/save_calib_turbidity", status_code=status.HTTP_200_OK)
