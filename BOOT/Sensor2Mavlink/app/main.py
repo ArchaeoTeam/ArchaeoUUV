@@ -154,18 +154,49 @@ class MM:
                 except Exception as e:
 
                     print("Eine Fehler bei O2 ist aufgetreten:", str(e))
-                    
+    
+    def read_channel(bus, ads_address, channel,self) -> None:
+            
+        config = [0x84, 0x83 | (channel << 4)]
+        bus.write_i2c_block_data(ads_address, 0x01, config)
+
+        time.sleep(0.1)
+
+
+        data = bus.read_i2c_block_data(ads_address, 0x00, 2)
+
+
+        value = data[0] * 256 + data[1]
+
+
+        if value > 0x7FF:
+            value -= 0x1000
+        
+        voltage = value * 4.096 / 2047
+
+        return voltage
+                        
     def getSensors(self) -> None:
         
         while True:
             try:
                 i2c = busio.I2C(board.SCL, board.SDA)
                 bus = SMBus(6)
-                ads = ADS.ADS1115(i2c=bus)
-                chan0 = AnalogIn(ads, ADS.P0)
-                chan1 = AnalogIn(ads, ADS.P1)
-                chan2 = AnalogIn(ads, ADS.P2)
-                chan3 = AnalogIn(ads, ADS.P3)
+                ads_address= 0x48
+                
+                
+                for channel in range(4):
+                    config = [0x84, 0x83 | (channel << 4)]
+                    bus.write_i2c_block_data(ads_address, 0x01, config)
+                    time.sleep(0.1)
+                    data = bus.read_i2c_block_data(ads_address, 0x00, 2)
+                    value = data[0] * 256 + data[1]
+                    if value > 0x7FF:
+                        value -= 0x1000
+                    voltage = value * 4.096 / 2047
+
+                    
+
                 break
             except Exception as e:
                 print("InitError" + e)
@@ -198,10 +229,20 @@ class MM:
                 tds_calib2 = float(f.read())
                 f=open(turbidity_calib_file2, "r")
                 turbidity_calib2 = float(f.read())
-                list_o2.append(chan0.voltage*o2_calib+o2_calib2)
-                list_tds.append(chan1.voltage*tds_calib+tds_calib2)
-                list_ph.append(chan2.voltage*ph_calib+ph_calib2)
-                list_turbidity.append(chan3.voltage*turbidity_calib+turbidity_calib2)
+                for channel in range(4):
+                    config = [0x84, 0x83 | (channel << 4)]
+                    bus.write_i2c_block_data(ads_address, 0x01, config)
+                    time.sleep(0.1)
+                    data = bus.read_i2c_block_data(ads_address, 0x00, 2)
+                    value = data[0] * 256 + data[1]
+                    if value > 0x7FF:
+                        value -= 0x1000
+                    voltage[channel] = value * 4.096 / 2047
+                
+                list_o2.append(channel[0]*o2_calib+o2_calib2)
+                list_tds.append(channel[1].voltage*tds_calib+tds_calib2)
+                list_ph.append(channel[2].voltage*ph_calib+ph_calib2)
+                list_turbidity.append(channel[3].voltage*turbidity_calib+turbidity_calib2)
                 print(len(list[0])," ",end=" ")
 
                 if len(list[0]) > 9:
