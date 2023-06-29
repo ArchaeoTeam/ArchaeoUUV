@@ -15,7 +15,7 @@ from multiprocessing import Process
 
 from pydantic import BaseModel
 import os
-
+import requests
 import threading
 import datetime
 import asyncio
@@ -59,7 +59,7 @@ o2_calib2       =0.0
 tds_calib2      =0.0
 ph_calib2       =0.0
 turbidity_calib2=0.0
-
+o2_ble_value=0.0
 class MM:
     def __init__(self) -> None:
         while True:
@@ -136,6 +136,24 @@ class MM:
         #print(int(((time.time() - self.time_since_boot) * 1000)))
         asyncio.run(self.send_mavlink_message(1))
 
+    def getO2(self) -> None:
+        while True:
+                try:
+                    url = 'http://192.168.42.123/events'
+                    response = requests.get(url, stream=True)
+                    for line in response.iter_lines():
+                        if line:
+                            line = line.decode('utf-8')
+                            if '"id":' in line:
+                                data_dict = json.loads(line[6:])
+                                #if data_dict['name'] == 'BLE-9100 O2':
+                                if data_dict['namee'] == 'BLE-9100 Temperature':
+                                    if data_dict['value'] is not None:
+                                        print('BLE-9100 O2 value:', data_dict['value']) 
+                except Exception as e:
+
+                    print("Eine Fehler bei O2 ist aufgetreten:", str(e))
+                    
     def getSensors(self) -> None:
         
         while True:
@@ -178,7 +196,7 @@ class MM:
                 tds_calib2 = float(f.read())
                 f=open(turbidity_calib_file2, "r")
                 turbidity_calib2 = float(f.read())
-                list_o2.append(chan0.voltage*o2_calib+o2_calib2)
+                list_o2.append(o2_ble_value*o2_calib+o2_calib2)
                 list_tds.append(chan1.voltage*tds_calib+tds_calib2)
                 list_ph.append(chan2.voltage*ph_calib+ph_calib2)
                 list_turbidity.append(chan3.voltage*turbidity_calib+turbidity_calib2)
@@ -276,6 +294,8 @@ print("written")
 
 thread_Sensors = threading.Thread(target=test.getSensors, args=(), daemon=True)
 thread_Sensors.start()
+thread_o2 = threading.Thread(target=test.getO2, args=(), daemon=True)
+thread_o2.start()
 print("Thread strated")
 
 #p = Process(target=test.getSensorsService, args=())
