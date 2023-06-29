@@ -241,7 +241,7 @@ class MM:
                     #print(value)
                     voltage[channel] = value * 4.096 / 2047
                     
-                print("0:"+voltage[0]+"1:"+voltage[1]+"2:"+voltage[2]+"3:"+voltage[3])
+                print("0:"+str(voltage[0])+"1:"+str(voltage[1])+"2:"+str(voltage[2])+"3:"+str(voltage[3]))
 
                 list_o2.append(voltage[0]*o2_calib+o2_calib2)
                 list_tds.append(voltage[1]*tds_calib+tds_calib2)
