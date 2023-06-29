@@ -238,6 +238,7 @@ class MM:
                     time.sleep(0.3)
                     data = bus.read_i2c_block_data(ads_address, 0x00, 2)
                     time.sleep(0.3)
+                    data = bus.read_i2c_block_data(ads_address, 0x00, 2)
                     value = data[0] * 256 + data[1]
                     if value > 0x7FF:
                         value -= 0x1000
