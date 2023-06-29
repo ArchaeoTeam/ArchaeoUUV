@@ -243,10 +243,10 @@ class MM:
                     
                 print("0:"+str(round(voltage[0],1))+"  1:"+str(round(voltage[1],1))+"  2:"+str(round(voltage[2],1))+"  3:"+str(round(voltage[3],1)))
 
-                list_o2.append(voltage[0]*o2_calib+o2_calib2)
-                list_tds.append(voltage[1]*tds_calib+tds_calib2)
-                list_ph.append(voltage[2]*ph_calib+ph_calib2)
-                list_turbidity.append(voltage[3]*turbidity_calib+turbidity_calib2)
+                list_o2.append((voltage[0]+o2_calib2)*o2_calib)
+                list_tds.append((voltage[1]+tds_calib2)*tds_calib)
+                list_ph.append((voltage[2]+ph_calib2)*ph_calib)
+                list_turbidity.append((voltage[3]+turbidity_calib2)*turbidity_calib)
                 #print(len(list[0])," ",end=" ")
 
                 if len(list[0]) > 9:
