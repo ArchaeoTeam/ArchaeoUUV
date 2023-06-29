@@ -242,9 +242,9 @@ class MM:
                     voltage[channel] = value * 4.096 / 2047
                 
                 list_o2.append(voltage[0]*o2_calib+o2_calib2)
-                list_tds.append(voltage[1].voltage*tds_calib+tds_calib2)
-                list_ph.append(voltage[2].voltage*ph_calib+ph_calib2)
-                list_turbidity.append(voltage[3].voltage*turbidity_calib+turbidity_calib2)
+                list_tds.append(voltage[1]*tds_calib+tds_calib2)
+                list_ph.append(voltage[2]*ph_calib+ph_calib2)
+                list_turbidity.append(voltage[3]*turbidity_calib+turbidity_calib2)
                 print(len(list[0])," ",end=" ")
 
                 if len(list[0]) > 9:
