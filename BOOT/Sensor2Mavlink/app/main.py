@@ -181,25 +181,14 @@ class MM:
         while True:
             try:
                 i2c = busio.I2C(board.SCL, board.SDA)
-                bus = SMBus(6)
-                ads_address= 0x48
-                
-                
-                #for channel in range(4):
-                    #config = [0x84, 0x83 | (channel << 4)]
-                   # bus.write_i2c_block_data(ads_address, 0x01, config)
-                   # time.sleep(0.1)
-                   # data = bus.read_i2c_block_data(ads_address, 0x00, 2)
-                   # value = data[0] * 256 + data[1]
-                   # if value > 0x7FF:
-                   #     value -= 0x1000
-                   # voltage = value * 4.096 / 2047
-
-                    
-
+                ads = ADS.ADS1115(i2c)
+                chan0 = AnalogIn(ads, ADS.P0)
+                chan1 = AnalogIn(ads, ADS.P1)
+                chan2 = AnalogIn(ads, ADS.P2)
+                chan3 = AnalogIn(ads, ADS.P3)
                 break
             except Exception as e:
-                print("InitError" + e)
+                print("InitError" +  )
         print("readed Values")        
         list=[],[],[],[] 
         while True:
@@ -230,29 +219,16 @@ class MM:
                 f=open(turbidity_calib_file2, "r")
                 turbidity_calib2 = float(f.read())
                 
-                for channel in range(4):
-                    bus = SMBus(1)
-                    ads_address= 0x48
-                    config = [(0x84 | (channel << 4)), 0x83]
-                    bus.write_i2c_block_data(ads_address, 0x01, config)
-                    time.sleep(0.3)
-                    data = bus.read_i2c_block_data(ads_address, 0x00, 2)
-                    time.sleep(0.3)
-                    data = bus.read_i2c_block_data(ads_address, 0x00, 2)
-                    time.sleep(0.3)
-                    data = bus.read_i2c_block_data(ads_address, 0x00, 2)
-                    value = data[0] * 256 + data[1]
-                    if value > 0x7FF:
-                        value -= 0x1000
-                    #print(value)
-                    voltage[channel] = value * 4.096 / 2047
+                
                     
-                print("0:"+str(round(voltage[0],1))+"  1:"+str(round(voltage[1],1))+"  2:"+str(round(voltage[2],1))+"  3:"+str(round(voltage[3],1)))
-
-                list_o2.append((voltage[0]+o2_calib2)*o2_calib)
-                list_tds.append((voltage[1]+tds_calib2)*tds_calib)
-                list_ph.append((voltage[2]+ph_calib2)*ph_calib)
-                list_turbidity.append((voltage[3]+turbidity_calib2)*turbidity_calib)
+                list_o2.append(chan0.voltage*o2_calib+o2_calib2)
+                list_tds.append(chan1.voltage*tds_calib+tds_calib2)
+                list_ph.append(chan2.voltage*ph_calib+ph_calib2)
+                list_turbidity.append(chan3.voltage*turbidity_calib+turbidity_calib2)
+                #list_o2.append((voltage[0]+o2_calib2)*o2_calib)
+                #list_tds.append((voltage[1]+tds_calib2)*tds_calib)
+                #list_ph.append((voltage[2]+ph_calib2)*ph_calib)
+                #list_turbidity.append((voltage[3]+turbidity_calib2)*turbidity_calib)
                 #print(len(list[0])," ",end=" ")
 
                 if len(list[0]) > 9:
