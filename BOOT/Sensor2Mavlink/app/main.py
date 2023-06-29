@@ -245,10 +245,10 @@ class MM:
                 list_tds.append(voltage[1]*tds_calib+tds_calib2)
                 list_ph.append(voltage[2]*ph_calib+ph_calib2)
                 list_turbidity.append(voltage[3]*turbidity_calib+turbidity_calib2)
-                print(len(list[0])," ",end=" ")
+                #print(len(list[0])," ",end=" ")
 
                 if len(list[0]) > 9:
-                    print(" ")
+                    #print(" ")
                     for z in range(4):
                         resall = statistics.variance(list[z])
                         for y in range(3):
