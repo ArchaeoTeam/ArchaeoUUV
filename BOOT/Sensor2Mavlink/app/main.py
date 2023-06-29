@@ -205,7 +205,7 @@ class MM:
         while True:
             time.sleep(0.1)
             #print("written")
-            voltage=[]
+            voltage=[0,0,0,0]
             list_o2=list[0]
             list_tds=list[1]
             list_ph=list[2]
@@ -241,10 +241,10 @@ class MM:
                     print(value)
                     voltage[channel] = value * 4.096 / 2047
                 
-                list_o2.append(channel[0]*o2_calib+o2_calib2)
-                list_tds.append(channel[1].voltage*tds_calib+tds_calib2)
-                list_ph.append(channel[2].voltage*ph_calib+ph_calib2)
-                list_turbidity.append(channel[3].voltage*turbidity_calib+turbidity_calib2)
+                list_o2.append(voltage[0]*o2_calib+o2_calib2)
+                list_tds.append(voltage[1].voltage*tds_calib+tds_calib2)
+                list_ph.append(voltage[2].voltage*ph_calib+ph_calib2)
+                list_turbidity.append(voltage[3].voltage*turbidity_calib+turbidity_calib2)
                 print(len(list[0])," ",end=" ")
 
                 if len(list[0]) > 9:
