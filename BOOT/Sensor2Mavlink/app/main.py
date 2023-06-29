@@ -230,7 +230,7 @@ class MM:
                 f=open(turbidity_calib_file2, "r")
                 turbidity_calib2 = float(f.read())
                 for channel in range(4):
-                    config = [0x84, 0x83 | (channel << 4)]
+                    config = [(0x84 | (channel << 4)), 0x83]
                     bus.write_i2c_block_data(ads_address, 0x01, config)
                     time.sleep(0.1)
                     data = bus.read_i2c_block_data(ads_address, 0x00, 2)
