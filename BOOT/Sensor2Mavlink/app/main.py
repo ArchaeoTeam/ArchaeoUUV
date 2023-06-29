@@ -241,10 +241,10 @@ class MM:
                     list=[],[],[],[] 
                     #print("Daten geschrieben")
                     #self.send_statustext("TEST")
-            except Exception:
+            except Exception as e:
                 #Ausgeben des Fehlers
                 x=1 #
-                print("ValueError")
+                print("ValueError:" + e)
                 list=[],[],[],[] 
     
     
