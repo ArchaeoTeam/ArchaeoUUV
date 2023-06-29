@@ -12,6 +12,7 @@ from loguru import logger
 from gpiozero import Servo
 from unsync import unsync
 from multiprocessing import Process
+from smbus2 import SMBus
 
 from pydantic import BaseModel
 import os
@@ -159,6 +160,7 @@ class MM:
         while True:
             try:
                 i2c = busio.I2C(board.SCL, board.SDA)
+                i2c = SMBus(6)
                 ads = ADS.ADS1115(i2c)
                 chan0 = AnalogIn(ads, ADS.P0)
                 chan1 = AnalogIn(ads, ADS.P1)
