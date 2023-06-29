@@ -205,22 +205,17 @@ class MM:
                 if len(list[0]) > 9:
                     print(" ")
                     for z in range(4):
-                        mean = statistics.mean(list[z])
-                        #print(mean)
                         resall = statistics.variance(list[z])
-                        #print("The variance of list is : " + str(resall)) 
-                        for x in range(3):
+                        for y in range(3):
                           for x in range(len(list[z])):
-                            #print(x)
                             listneu=list[z].copy()
-                            #print(listneu)
                             del listneu[x]
                             res = statistics.variance(listneu)
                             if resall > res:
                               y=x
                           del list[z][y]
                           resall = statistics.variance(list[z])
-                          #print(list[z])
+                          #print(list[z]) 
                           #print("The variance of list is : " + str(resall))
                         list[z][0] = statistics.mean(list[z])
                             
