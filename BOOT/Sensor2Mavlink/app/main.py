@@ -160,8 +160,8 @@ class MM:
         while True:
             try:
                 i2c = busio.I2C(board.SCL, board.SDA)
-                i2c = SMBus(6)
-                ads = ADS.ADS1115(i2c)
+                bus = SMBus(6)
+                ads = ADS.ADS1115(i2c=bus)
                 chan0 = AnalogIn(ads, ADS.P0)
                 chan1 = AnalogIn(ads, ADS.P1)
                 chan2 = AnalogIn(ads, ADS.P2)
