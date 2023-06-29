@@ -205,7 +205,7 @@ class MM:
         while True:
             time.sleep(0.1)
             #print("written")
-            voltage=[0,0,0,0]
+            voltage=[0.0,0.0,0.0,0.0]
             list_o2=list[0]
             list_tds=list[1]
             list_ph=list[2]
