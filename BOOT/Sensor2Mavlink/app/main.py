@@ -205,7 +205,7 @@ class MM:
         while True:
             time.sleep(0.1)
             #print("written")
-            
+            voltage=[]
             list_o2=list[0]
             list_tds=list[1]
             list_ph=list[2]
@@ -229,6 +229,7 @@ class MM:
                 tds_calib2 = float(f.read())
                 f=open(turbidity_calib_file2, "r")
                 turbidity_calib2 = float(f.read())
+                
                 for channel in range(4):
                     config = [(0x84 | (channel << 4)), 0x83]
                     bus.write_i2c_block_data(ads_address, 0x01, config)
@@ -238,7 +239,7 @@ class MM:
                     if value > 0x7FF:
                         value -= 0x1000
                     print(value)
-                    voltage = value * 4.096 / 2047
+                    voltage[channel] = value * 4.096 / 2047
                 
                 list_o2.append(channel[0]*o2_calib+o2_calib2)
                 list_tds.append(channel[1].voltage*tds_calib+tds_calib2)
