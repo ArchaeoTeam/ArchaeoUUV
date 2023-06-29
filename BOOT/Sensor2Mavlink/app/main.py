@@ -167,8 +167,8 @@ class MM:
                 chan2 = AnalogIn(ads, ADS.P2)
                 chan3 = AnalogIn(ads, ADS.P3)
                 break
-            except Exception:
-                print("InitError")
+            except Exception as e:
+                print("InitError" + e)
         print("readed Values")        
         list=[],[],[],[] 
         while True:
