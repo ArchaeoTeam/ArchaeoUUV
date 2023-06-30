@@ -159,7 +159,7 @@ class MM:
         global o2_ble_value
         global tmp
         while True:
-                time.sleep(1.0)
+                time.sleep(3.0)
                 print("Starte O2")
                 try:
                     url = 'http://192.168.42.123/events'
