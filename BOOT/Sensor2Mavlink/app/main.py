@@ -229,7 +229,7 @@ class MM:
                 x=chan2.voltage
                 
                 list_o2.append((chan2.voltage+o2_calib2)*o2_calib)
-                print(statistics.mean(list_ph))
+                #print(statistics.mean(list_ph))
                 list_tds.append((chan3.voltage+tds_calib2)*tds_calib)
 
                 #list_o2.append((voltage[0]+o2_calib2)*o2_calib)
