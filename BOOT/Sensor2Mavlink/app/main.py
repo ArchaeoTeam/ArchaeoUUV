@@ -144,6 +144,8 @@ class MM:
             if tmp == "online":
                 tmp="offline"
             else:
+                tmp="online"
+                print("Starte O2-Thread neu")
                 thread_o2.stop()
                 thread_o2.start()
             time.sleep(5)
