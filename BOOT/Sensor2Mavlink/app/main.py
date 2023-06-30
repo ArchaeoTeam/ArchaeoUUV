@@ -233,22 +233,22 @@ class MM:
                 #print(len(list[0])," ",end=" ")
                 print(chan2.voltage)
                 print(chan3.voltage)
-                if len(list[0]) > 9:
-                    #print(" ")
-                    for z in range(4):
-                        resall = statistics.variance(list[z])
-                        for y in range(3):
-                          for x in range(len(list[z])):
-                            listneu=list[z].copy()
-                            del listneu[x]
-                            res = statistics.variance(listneu)
-                            if resall > res:
-                              y=x
-                          del list[z][y]
-                          resall = statistics.variance(list[z])
-                          #print(list[z]) 
-                          #print("The variance of list is : " + str(resall))
-                        list[z][0] = statistics.mean(list[z])
+                # if len(list[0]) > 9:
+                #     #print(" ")
+                #     for z in range(4):
+                #         resall = statistics.variance(list[z])
+                #         for y in range(3):
+                #           for x in range(len(list[z])):
+                #             listneu=list[z].copy()
+                #             del listneu[x]
+                #             res = statistics.variance(listneu)
+                #             if resall > res:
+                #               y=x
+                #           del list[z][y]
+                #           resall = statistics.variance(list[z])
+                #           #print(list[z]) 
+                #           #print("The variance of list is : " + str(resall))
+                #         list[z][0] = statistics.mean(list[z])
                             
                     
                     #Schreiben der Analogen Werte
