@@ -153,6 +153,7 @@ class MM:
                                 if data_dict['name'] == 'BLE-9100 Temperature':
                                     if data_dict['value'] is not None:
                                         print('BLE-9100 O2 value:', data_dict['value']) 
+                                        o2_ble_value=data_dict['value']
                 except Exception as e:
 
                     print("Eine Fehler bei O2 ist aufgetreten:", str(e))
