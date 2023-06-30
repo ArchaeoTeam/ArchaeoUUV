@@ -150,7 +150,7 @@ class MM:
                 print("Starte O2-Thread neu")
                 exc = ctypes.py_object(SystemExit)
                 ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(thread_o2.ident), exc)
-                thread_o2.
+
                 thread_o2 = threading.Thread(target=test.getO2, args=(), daemon=True)
                 thread_o2.start()
             time.sleep(5)
