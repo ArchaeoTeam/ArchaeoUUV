@@ -147,8 +147,8 @@ class MM:
                             line = line.decode('utf-8')
                             if '"id":' in line:
                                 data_dict = json.loads(line[6:])
-                                #if data_dict['name'] == 'BLE-9100 O2':
-                                if data_dict['name'] == 'BLE-9100 Temperature':
+                                if data_dict['name'] == 'BLE-9100 O2':
+                                #if data_dict['name'] == 'BLE-9100 Temperature':
                                     if data_dict['value'] is not None:
                                         print('BLE-9100 O2 value:', data_dict['value']) 
                 except Exception as e:
