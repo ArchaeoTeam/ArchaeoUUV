@@ -31,6 +31,8 @@ import busio
 import adafruit_ads1x15.ads1115 as ADS
 from adafruit_ads1x15.analog_in import AnalogIn
 import RPi.GPIO as GPIO
+import random
+
 
 
 user_config_dir = Path(appdirs.user_config_dir())
@@ -224,6 +226,8 @@ class MM:
             list_tds=list[1]
             list_ph=list[2]
             list_turbidity=list[3]
+            zahl = random.uniform(-4, 4)
+            zahl = round(zahl, 2)
             try:
                 #Auslesen der Analogen Calib Werte
                 f=open(o2_calib_file, "r")
