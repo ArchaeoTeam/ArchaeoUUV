@@ -233,7 +233,7 @@ class MM:
                 #print(len(list[0])," ",end=" ")
                 #print(chan2.voltage)
                 #print(chan3.voltage)
-                # if len(list[0]) > 9:
+                if len(list[0]) > 9:
                 #     #print(" ")
                 #     for z in range(4):
                 #         resall = statistics.variance(list[z])
