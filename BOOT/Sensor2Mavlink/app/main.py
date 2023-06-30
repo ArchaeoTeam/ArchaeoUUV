@@ -139,6 +139,7 @@ class MM:
 
     def getO2(self) -> None:
         while True:
+                sleep(1.0)
                 print("Starte O2")
                 try:
                     url = 'http://192.168.42.123/events'
