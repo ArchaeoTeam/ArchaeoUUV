@@ -139,8 +139,9 @@ class MM:
     def O2Watcher(self) -> None:
         thread_o2 = threading.Thread(target=test.getO2, args=(), daemon=True)
         thread_o2.start()
+        global tmp
         while True:
-            global tmp
+            
             if tmp == "online":
                 tmp="offline"
             else:
