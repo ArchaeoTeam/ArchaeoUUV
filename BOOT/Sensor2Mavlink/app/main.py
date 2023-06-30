@@ -240,8 +240,8 @@ class MM:
                 #print(chan2.voltage)
                 #print(chan3.voltage)
                 if len(list[0]) > 9:
-                    print(ph_calib2)
-                    print(ph_calib)
+                    #print(ph_calib2)
+                    #print(ph_calib)
                 #     #print(" ")
                 #     for z in range(4):
                 #         resall = statistics.variance(list[z])
@@ -258,7 +258,7 @@ class MM:
                 #           #print("The variance of list is : " + str(resall))
                 #         list[z][0] = statistics.mean(list[z])
                             
-                    print(list)
+                    #print(list)
                     #Schreiben der Analogen Werte
                     f=open(o2_file, "w")
                     f.write(str(round(list[0][0],3)))
