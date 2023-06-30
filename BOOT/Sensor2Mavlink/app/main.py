@@ -231,8 +231,8 @@ class MM:
                 #list_ph.append((voltage[2]+ph_calib2)*ph_calib)
                 #list_turbidity.append((voltage[3]+turbidity_calib2)*turbidity_calib)
                 #print(len(list[0])," ",end=" ")
-                print(chan2.voltage)
-                print(chan3.voltage)
+                #print(chan2.voltage)
+                #print(chan3.voltage)
                 # if len(list[0]) > 9:
                 #     #print(" ")
                 #     for z in range(4):
