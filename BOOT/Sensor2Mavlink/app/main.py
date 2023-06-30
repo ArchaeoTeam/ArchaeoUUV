@@ -234,8 +234,8 @@ class MM:
                 #print(chan2.voltage)
                 #print(chan3.voltage)
                 if len(list[0]) > 9:
-                    print(list_ph)
-                    print(list_turbidity)
+                    print(ph_calib2)
+                    print(ph_calib)
                 #     #print(" ")
                 #     for z in range(4):
                 #         resall = statistics.variance(list[z])
