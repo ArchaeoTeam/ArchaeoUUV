@@ -262,7 +262,7 @@ class MM:
                     f=open(tds_file, "w")
                     f.write(str(round(list[1][0],3)))
                     f=open(ph_file, "w")
-                    f.write(str(round(list[2][0]+(list[3][0]*1.75),3)))
+                    f.write(str(round(list[2][0]+(list[3][0]*1.70),3)))
                     f=open(turbidity_file, "w")
                     f.write(str(round(list[3][0],3)))
 
