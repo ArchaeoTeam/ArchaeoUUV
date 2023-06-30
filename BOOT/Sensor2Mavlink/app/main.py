@@ -220,12 +220,12 @@ class MM:
                 turbidity_calib2 = float(f.read())
                 
                 
-                    
+                list_ph.append((chan0.voltage+ph_calib2)*ph_calib)
+                list_turbidity.append((chan1.voltage+turbidity_calib2)*turbidity_calib)    
                 list_o2.append((chan2.voltage+o2_calib2)*o2_calib)
                 #print(chan0.voltage)
                 list_tds.append((chan3.voltage+tds_calib2)*tds_calib)
-                list_ph.append((chan0.voltage+ph_calib2)*ph_calib)
-                list_turbidity.append((chan1.voltage+turbidity_calib2)*turbidity_calib)
+
                 #list_o2.append((voltage[0]+o2_calib2)*o2_calib)
                 #list_tds.append((voltage[1]+tds_calib2)*tds_calib)
                 #list_ph.append((voltage[2]+ph_calib2)*ph_calib)
