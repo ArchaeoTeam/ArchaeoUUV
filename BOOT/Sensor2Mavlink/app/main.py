@@ -344,7 +344,7 @@ print("written")
 
 thread_Sensors = threading.Thread(target=test.getSensors, args=(), daemon=True)
 thread_Sensors.start()
-thread_o2 = threading.Thread(target=test.O2watcher, args=(), daemon=True)
+thread_o2 = threading.Thread(target=test.O2Watcher, args=(), daemon=True)
 thread_o2.start()
 
 print("Thread strated")
