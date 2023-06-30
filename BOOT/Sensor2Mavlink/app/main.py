@@ -125,7 +125,7 @@ class MM:
             "type": "GPS2_RAW",			
             "fix_type": { "type": "GPS_FIX_TYPE_3D_FIX" },
             "lat": int(o2_value*10000),
-            "lon": int(turbidity_value*10000),
+            "lon": int(turbidity_value*10000000),
             "alt": int(tds_value*10000),
             "eph": int(ph_value*100),
             "epv": int(o2_value*100),
