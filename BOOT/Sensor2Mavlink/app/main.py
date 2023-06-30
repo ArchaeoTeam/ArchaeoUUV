@@ -131,7 +131,7 @@ class MM:
             "epv": int(o2_value*100),
             "vel": 0,
             "cog": 0,
-            "satellites_visible": int(tds_value),
+            "satellites_visible": 0,
             "dgps_numch": 0,
             "dgps_age": 99999
             },
