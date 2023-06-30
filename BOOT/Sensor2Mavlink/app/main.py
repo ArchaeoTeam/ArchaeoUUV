@@ -148,7 +148,7 @@ class MM:
             else:
                 tmp="online"
                 print("Starte O2-Thread neu")
-                thread_o2.stop()
+
                 thread_o2 = threading.Thread(target=test.getO2, args=(), daemon=True)
                 thread_o2.start()
             time.sleep(5)
