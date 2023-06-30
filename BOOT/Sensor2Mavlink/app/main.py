@@ -147,7 +147,7 @@ class MM:
                     url = 'http://192.168.42.123/events'
                     response = requests.get(url, stream=True)
                     for line in response.iter_lines():
-                        print(test)
+                        print("test")
                         if line:
                             line = line.decode('utf-8')
                             if '"id":' in line:
