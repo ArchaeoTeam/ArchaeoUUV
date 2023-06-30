@@ -61,6 +61,7 @@ tds_calib2      =0.0
 ph_calib2       =0.0
 turbidity_calib2=0.0
 o2_ble_value=0.0
+tds_ble_value=500.0
 tmp = "online"
 class MM:
     def __init__(self) -> None:
@@ -290,9 +291,10 @@ class MM:
                     f=open(turbidity_file, "w")
                     f.write(str(round(list[3][0],3)))
                     global o2_ble_value
+                    global tds_ble_value
                     #Logoutput
                     print(str(o2_ble_value), str(round(list[1][0],3)), str(round(list[2][0]+(list[3][0]*1.75),3)), str(round(list[3][0],3)))                   
-                    self.send_sensors_to_mavlink(str(o2_ble_value), str(round(list[1][0],3)), str(round(list[2][0]+(list[3][0]*1.75),3)), str(round(list[3][0],3)))
+                    self.send_sensors_to_mavlink(o2_ble_value, round(list[2][0]+(list[3][0]*1.75),3), tds_ble_value, round(list[3][0],3))
                     #self.send_sensors_to_mavlink(round(list[0][0],3),round(list[1][0],3),round(list[2][0],3),o2_ble_value)
                     list=[],[],[],[] 
                     #print("Daten geschrieben")
