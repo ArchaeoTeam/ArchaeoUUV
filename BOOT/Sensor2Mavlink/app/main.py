@@ -117,7 +117,7 @@ class MM:
         }
         asyncio.run(self.send_mavlink_message(1))
         #"message": { "time_usec": 1667512936,
-    def send_sensors_to_mavlink(self, o2_value: float, tds_value: float, ph_value: float, turbidity_value: float) -> None:
+    def send_sensors_to_mavlink(self, o2_value: float, ph_value: float, tds_value: float, turbidity_value: float) -> None:
         #(o2_value,tds_value,ph_value,turbidity_value)
         self.mavlink2rest_package = {
             "header": {"system_id": 1, "component_id": 1, "sequence": 1},
@@ -125,9 +125,9 @@ class MM:
             "type": "GPS2_RAW",			
             "fix_type": { "type": "GPS_FIX_TYPE_3D_FIX" },
             "lat": int(o2_value*10000),
-            "lon": int(tds_value*10000),
-            "alt": int(ph_value*10000),
-            "eph": int(turbidity_value*10000),
+            "lon": int(ph_value*10000),
+            "alt": int(tds_value*10000),
+            "eph": int(turbidity_value*100),
             "epv": 0,
             "vel": 0,
             "cog": 0,
