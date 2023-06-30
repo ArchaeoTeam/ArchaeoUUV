@@ -219,9 +219,14 @@ class MM:
                 f=open(turbidity_calib_file2, "r")
                 turbidity_calib2 = float(f.read())
                 
-                
+                x=chan0.voltage
+                x=chan0.voltage
                 list_ph.append((chan0.voltage+ph_calib2)*ph_calib)
+                x=chan1.voltage
+                x=chan1.voltage
                 list_turbidity.append((chan1.voltage+turbidity_calib2)*turbidity_calib)    
+                x=chan2.voltage
+                x=chan2.voltage
                 list_o2.append((chan2.voltage+o2_calib2)*o2_calib)
                 print(statistics.mean(list_ph))
                 list_tds.append((chan3.voltage+tds_calib2)*tds_calib)
