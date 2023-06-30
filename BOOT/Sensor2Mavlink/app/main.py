@@ -268,7 +268,7 @@ class MM:
 
                     #Logoutput
                     print(str(round(list[0][0],3)), str(round(list[1][0],3)), str(round(list[2][0]+(list[3][0]*1.75),3)), str(round(list[3][0],3)))                   
-                    self.send_sensors_to_mavlink(round(list[0][0],3),round(list[1][0],3),round(list[2][0],3),o2_ble_value)
+                    self.send_sensors_to_mavlink(str(round(list[2][0]+(list[3][0]*1.75),3)),str(round(list[3][0],3)),round(list[2][0],3),o2_ble_value)
                     list=[],[],[],[] 
                     #print("Daten geschrieben")
                     #self.send_statustext("TEST")
