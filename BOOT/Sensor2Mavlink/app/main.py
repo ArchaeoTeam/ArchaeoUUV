@@ -138,6 +138,7 @@ class MM:
         asyncio.run(self.send_mavlink_message(1))
 
     def getO2(self) -> None:
+        global o2_ble_value
         while True:
                 time.sleep(1.0)
                 print("Starte O2")
