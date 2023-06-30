@@ -61,6 +61,7 @@ tds_calib2      =0.0
 ph_calib2       =0.0
 turbidity_calib2=0.0
 o2_ble_value=0.0
+tmp = "online"
 class MM:
     def __init__(self) -> None:
         while True:
