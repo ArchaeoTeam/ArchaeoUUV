@@ -136,7 +136,18 @@ class MM:
         }
         #print(int(((time.time() - self.time_since_boot) * 1000)))
         asyncio.run(self.send_mavlink_message(1))
-
+    def O2Watcher(self) -> None:
+        thread_o2 = threading.Thread(target=test.getO2, args=(), daemon=True)
+        thread_o2.start()
+        while True:
+            global tmp
+            if tmp == "online":
+                tmp="offline"
+            else:
+                thread_o2.stop()
+                thread_o2.start()
+            time.sleep(5)
+                
     def getO2(self) -> None:
         global o2_ble_value
         global tmp
@@ -147,7 +158,7 @@ class MM:
                     url = 'http://192.168.42.123/events'
                     response = requests.get(url, stream=True)
                     for line in response.iter_lines():
-                        print("test")
+                        tmp="online"
                         if line:
                             line = line.decode('utf-8')
                             if '"id":' in line:
@@ -331,8 +342,9 @@ print("written")
 
 thread_Sensors = threading.Thread(target=test.getSensors, args=(), daemon=True)
 thread_Sensors.start()
-thread_o2 = threading.Thread(target=test.getO2, args=(), daemon=True)
+thread_o2 = threading.Thread(target=test.O2watcher, args=(), daemon=True)
 thread_o2.start()
+
 print("Thread strated")
 
 #p = Process(target=test.getSensorsService, args=())
