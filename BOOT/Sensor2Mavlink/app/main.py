@@ -222,7 +222,7 @@ class MM:
                 
                     
                 list_o2.append((chan0.voltage+o2_calib2)*o2_calib)
-                print(chan0.voltage)
+                #print(chan0.voltage)
                 list_tds.append((chan1.voltage+tds_calib2)*tds_calib)
                 list_ph.append((chan2.voltage+ph_calib2)*ph_calib)
                 list_turbidity.append((chan3.voltage+turbidity_calib2)*turbidity_calib)
