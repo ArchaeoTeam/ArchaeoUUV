@@ -139,6 +139,7 @@ class MM:
 
     def getO2(self) -> None:
         global o2_ble_value
+        global tmp
         while True:
                 time.sleep(1.0)
                 print("Starte O2")
@@ -150,8 +151,8 @@ class MM:
                             line = line.decode('utf-8')
                             if '"id":' in line:
                                 data_dict = json.loads(line[6:])
-                               # if data_dict['name'] == 'BLE-9100 O2':
-                                if data_dict['name'] == 'BLE-9100 Temperature':
+                                if data_dict['name'] == 'BLE-9100 O2':
+                               # if data_dict['name'] == 'BLE-9100 Temperature':
                                     if data_dict['value'] is not None:
                                         print('BLE-9100 O2 value:', data_dict['value']) 
                                         o2_ble_value=data_dict['value']
